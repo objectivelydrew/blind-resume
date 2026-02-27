@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blind Resume · D1 Men's Basketball 2025-26</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+
+:root {
+  --bg: #f7f5f2;
+  --surface: #ffffff;
+  --border: #e8e4de;
+  --text: #1a1a1a;
+  --muted: #999;
+  --muted2: #bbb;
+  --q1: #e8003a;
+  --q2: #e8003a;
+  --q3: #e8003a;
+  --q4: #e8003a;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 28px;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 20;
+}
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: .14em;
+  color: var(--text);
+}
+.logo span { color: #888; }
+.score {
+  font-size: 10px;
+  letter-spacing: .12em;
+  color: var(--muted);
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.score strong {
+  color: var(--text);
+  font-size: 15px;
+  font-family: 'Bebas Neue', sans-serif;
+}
+.new-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all .2s;
+}
+.new-btn:hover { border-color: var(--text); color: var(--text); }
+.new-btn:disabled { opacity: .35; cursor: default; }
+.hc-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid #555;
+  color: #aaa;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.hc-btn:hover { border-color: #aaa; color: #fff; }
+.hc-btn.active { background: #0072B2; border-color: #0072B2; color: #fff; }
+
+/* ── ARENA ── */
+#arena {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+.gdiv { background: var(--border); }
+
+/* ── HALF ── */
+.half {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  background: var(--bg);
+  transition: background .2s;
+}
+.half:hover:not(.locked) { background: #e4e0d8; }
+
+/* ── PANEL HEAD ── */
+.phead {
+  padding: 16px 20px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.side-letter {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 52px;
+  line-height: 1;
+  color: #e0dcd6;
+  letter-spacing: .04em;
+  transition: color .4s;
+  user-select: none;
+}
+.rhs { text-align: right; }
+.record {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  letter-spacing: .04em;
+  line-height: 1;
+  color: var(--text);
+}
+.conf-tag {
+  font-size: 11px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+/* ── CANVAS AREA ── */
+.canvas-area {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+  min-height: 0;
+  position: relative;
+}
+.ccol {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.ccol-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.ccol-label {
+  font-size: 11px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  pointer-events: none;
+  white-space: nowrap;
+}
+canvas {
+  display: block;
+}
+
+/* ── STATS BAR ── */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--surface);
+}
+.stt {
+  padding: 10px 14px;
+  border-right: 1px solid var(--border);
+}
+.stt:last-child { border-right: none; }
+.stt-l {
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.stt-v {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px;
+  letter-spacing: .04em;
+  line-height: 1;
+  color: var(--text);
+}
+
+/* ── VOTE HINT ── */
+.vote-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity .2s;
+}
+.half:hover .vote-hint:not(.hidden) { opacity: 1; }
+.vote-pill {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: .16em;
+  color: rgba(0,0,0,.12);
+  border: 1px solid rgba(0,0,0,.08);
+  padding: 9px 22px;
+  border-radius: 3px;
+  background: rgba(255,255,255,.5);
+}
+
+/* ── REVEAL ── */
+.reveal {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  background: rgba(247,245,242,.95);
+  z-index: 20;
+  backdrop-filter: blur(8px);
+  gap: 4px;
+}
+.reveal.show { display: flex; }
+.rev-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(22px, 3vw, 46px);
+  letter-spacing: .06em;
+  line-height: 1.05;
+  color: var(--text);
+}
+.rev-conf {
+  font-size: 11px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.rev-rec {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(14px, 2vw, 26px);
+  letter-spacing: .06em;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.rev-badge {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 2px;
+}
+.bpw { background: rgba(0,160,80,.1); color: #008040; border: 1px solid rgba(0,160,80,.25); }
+.bpl { background: rgba(200,80,0,.08); color: #c05000; border: 1px solid rgba(200,80,0,.2); }
+.bwin { background: rgba(0,100,220,.08); color: #0050c0; border: 1px solid rgba(0,100,220,.2); }
+.blose { background: rgba(0,0,0,.04); color: var(--muted); border: 1px solid var(--border); }
+.rev-detail { font-size: 11px; letter-spacing: .08em; color: var(--muted2); margin-top: 10px; }
+
+/* ── VERDICT ── */
+#verdict {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 13px 20px;
+  z-index: 30;
+  display: none;
+  white-space: nowrap;
+  text-align: center;
+  box-shadow: 0 4px 24px rgba(0,0,0,.1);
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.vd-label { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.vd-text { font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: .1em; color: var(--text); }
+
+/* ── LEGEND ── */
+#legend {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0;
+  border-bottom: none;
+  background: #2a2a2a;
+  flex-shrink: 0;
+  padding: 12px 0;
+}
+
+/* Each legend section */
+.leg-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0 24px;
+  border-right: 1px solid #444;
+}
+.leg-section:last-child { border-right: none; }
+
+.leg-section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: .12em;
+  color: #fff;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* Quadrant rows */
+.leg-quads { display: flex; gap: 12px; }
+.leg-q {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  letter-spacing: .04em;
+  color: #ccc;
+  white-space: nowrap;
+}
+.leg-swatch {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Location table */
+.leg-table {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr 1fr;
+  gap: 3px 12px;
+  font-size: 10px;
+  letter-spacing: .04em;
+  color: #ccc;
+  text-align: center;
+}
+.leg-table-hd { color: #888; font-size: 10px; letter-spacing: .06em; }
+.leg-table-q { font-family: 'DM Mono', monospace; text-align: left; }
+
+/* Ring & margin explanation */
+.leg-explains { display: flex; flex-direction: column; gap: 6px; }
+.leg-explain {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  letter-spacing: .04em;
+  color: #ccc;
+  white-space: nowrap;
+}
+.leg-range {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.leg-ring {
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── LOADER ── */
+#loader {
+  position: fixed; inset: 0;
+  background: var(--bg); z-index: 100;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+}
+.loader-title { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: .14em; color: var(--muted); }
+.spinner { width: 26px; height: 26px; border: 2px solid var(--border); border-top-color: #999; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to{ transform: rotate(360deg); } }
+.loader-note { font-size: 9px; letter-spacing: .14em; color: var(--muted2); text-transform: uppercase; }
+
+/* ── PROGRESS BAR ── */
+.progress-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  padding: 0 32px;
+}
+.progress-bar {
+  width: 100%;
+  max-width: 280px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-bar #progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--text);
+  border-radius: 2px;
+  transition: width .4s ease;
+}
+.progress-label {
+  font-size: 11px;
+  letter-spacing: .08em;
+  color: var(--muted);
+}
+#tier-label { color: var(--text); font-weight: 500; }
+
+/* ── SITE FOOTER ── */
+.site-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  padding: 6px 0 7px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  z-index: 100;
+}
+.intro-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  padding: 6px 0 7px;
+  border-top: 1px solid var(--border);
+}
+#intro {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 300;
+  align-items: center;
+  justify-content: center;
+}
+#intro.show { display: flex; }
+.intro-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  max-width: 480px;
+  width: 90%;
+  text-align: center;
+}
+.intro-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.intro-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 52px;
+  letter-spacing: .16em;
+  color: var(--text);
+  line-height: 1;
+}
+.intro-logo span { color: #888; }
+.intro-sub {
+  font-size: 9px;
+  letter-spacing: .2em;
+  color: #888;
+  text-transform: uppercase;
+}
+.intro-divider {
+  width: 40px;
+  height: 1px;
+  background: var(--border);
+}
+.intro-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+.intro-rule {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  text-align: left;
+}
+.intro-rule-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  color: var(--border);
+  line-height: 1;
+  flex-shrink: 0;
+  width: 28px;
+}
+.intro-rule-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -.01em;
+  color: var(--text);
+  line-height: 1.65;
+  padding-top: 2px;
+}
+.intro-rule-text em {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--text);
+}
+.intro-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  padding: 14px 48px;
+  background: var(--text);
+  color: #fff;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: opacity .2s;
+  margin-top: 4px;
+}
+.intro-btn:hover { opacity: .8; }
+
+/* ── SUMMARY SCREEN ── */
+#summary {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(247,245,242,0.96);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+#summary.show { display: flex; }
+.sum-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 48px 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  max-width: 480px;
+  width: 90%;
+}
+.sum-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: .14em;
+  color: var(--muted);
+}
+.sum-logo span { color: var(--muted2); }
+.sum-score-big {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 96px;
+  line-height: 1;
+  letter-spacing: -.02em;
+  color: var(--text);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.sum-slash { color: var(--muted2); font-size: 64px; }
+.sum-grade {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: .14em;
+}
+.sum-msg {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -.01em;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.65;
+}
+.sum-breakdown {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 24px;
+  font-size: 11px;
+  letter-spacing: .06em;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  width: 100%;
+}
+.sum-tier { display: flex; justify-content: space-between; }
+.sum-tier-label { color: var(--text); }
+.sum-tier-score { font-family: 'Bebas Neue', sans-serif; font-size: 15px; color: var(--text); }
+.sum-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  padding: 10px 28px;
+  background: var(--text);
+  color: #fff;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: opacity .2s;
+}
+.sum-btn:hover { opacity: .8; }
+
+/* ── LOGO SUBTITLE ── */
+.logo-wrap { display: flex; flex-direction: column; gap: 1px; }
+.logo-sub {
+  font-size: 9px;
+  letter-spacing: .14em;
+  color: #888;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.sum-sub {
+  font-size: 9px;
+  letter-spacing: .14em;
+  color: var(--muted2);
+  text-transform: uppercase;
+  margin-top: -12px;
+}
+
+/* ── SHARE ── */
+.sum-share {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.sum-share-label {
+  font-size: 8.5px;
+  letter-spacing: .12em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.sum-share-btns { display: flex; gap: 8px; }
+.share-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  padding: 8px 18px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: opacity .2s;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.share-btn:hover { border-color: var(--text); }
+.share-bsky {
+  background: #0085ff;
+  color: #fff;
+  border-color: #0085ff;
+}
+.share-bsky:hover { opacity: .85; }
+.sum-share-url {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 6px 10px;
+  width: 100%;
+  justify-content: space-between;
+}
+.sum-url-text {
+  font-size: 11px;
+  letter-spacing: .04em;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sum-url-copy {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color .2s;
+}
+.sum-url-copy:hover { border-color: var(--text); }
+.share-copied {
+  font-size: 10px;
+  letter-spacing: .08em;
+  color: #2a8a4a;
+  opacity: 0;
+  transition: opacity .3s;
+  height: 12px;
+}
+.share-copied.show { opacity: 1; }
+
+/* ── NEXT BUTTON ── */
+.next-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  padding: 9px 28px;
+  background: var(--text);
+  color: #fff;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: opacity .2s;
+}
+.next-btn:hover { opacity: .75; }
+
+/* state */
+.half.locked { cursor: default; }
+.half.chosen-w .side-letter { color: #a8d8a8; }
+.half.chosen-l .side-letter { color: #f5c0b0; }
+.half.is-winner .phead { background: #f0f8f0; }
+
+@media(max-width: 680px) {
+  #arena { grid-template-columns: 1fr; grid-template-rows: 1fr 1px 1fr; }
+  .gdiv { width: 100%; height: 1px; }
+  .stats-bar { grid-template-columns: 1fr 1fr; }
+  .stt:nth-child(2) { border-right: none; }
+  .stt:nth-child(3) { border-top: 1px solid var(--border); }
+}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-title">Blind Resume</div>
+  <div class="spinner"></div>
+  <div class="loader-note">Loading real data…</div>
+</div>
+
+<div class="topbar">
+  <div class="logo-wrap">
+    <div class="logo">Blind <span>Resume</span></div>
+    <div class="logo-sub">Men's College Basketball</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-bar"><div id="progress-fill"></div></div>
+    <div class="progress-label"><span id="q-num">1</span> of 20</div>
+  </div>
+  <div class="score">Correct: <strong id="sc-r">0</strong> / <strong>20</strong></div>
+</div>
+
+<div id="legend">
+
+  <!-- Section 1: Quadrant colors -->
+  <div class="leg-section">
+    <div class="leg-section-title">Quadrant</div>
+    <div class="leg-quads">
+      <div class="leg-q"><div class="leg-swatch" style="background:rgb(220,30,50)"></div>Q1</div>
+      <div class="leg-q"><div class="leg-swatch" style="background:rgb(230,120,0)"></div>Q2</div>
+      <div class="leg-q"><div class="leg-swatch" style="background:rgb(210,185,0)"></div>Q3</div>
+      <div class="leg-q"><div class="leg-swatch" style="background:rgb(190,190,190)"></div>Q4</div>
+    </div>
+  </div>
+
+  <!-- Section 2: Location thresholds table -->
+  <div class="leg-section">
+    <div class="leg-section-title">NET Rank Thresholds</div>
+    <div class="leg-table">
+      <span class="leg-table-hd"></span>
+      <span class="leg-table-hd">HOME</span>
+      <span class="leg-table-hd">NEUTRAL</span>
+      <span class="leg-table-hd">AWAY</span>
+
+      <span class="leg-table-q" style="color:rgb(240,80,90)">Q1</span>
+      <span>1–30</span><span>1–50</span><span>1–75</span>
+
+      <span class="leg-table-q" style="color:rgb(240,150,60)">Q2</span>
+      <span>31–75</span><span>51–100</span><span>76–135</span>
+
+      <span class="leg-table-q" style="color:rgb(220,200,60)">Q3</span>
+      <span>76–160</span><span>101–200</span><span>136–240</span>
+
+      <span class="leg-table-q" style="color:rgb(190,190,190)">Q4</span>
+      <span>161+</span><span>201+</span><span>241+</span>
+    </div>
+  </div>
+
+  <!-- Section 3: Ring size + margin encoding -->
+  <div class="leg-section">
+    <div class="leg-section-title">How to Read This</div>
+    <div class="leg-explains">
+      <div class="leg-explain">
+        <div class="leg-range">
+          <div class="leg-ring" style="width:10px;height:10px;background:#ccc"></div>
+        </div>
+        <span>Each circle = 1 game played</span>
+      </div>
+      <div class="leg-explain">
+        <div class="leg-range">
+          <div class="leg-ring" style="width:6px;height:6px;background:#ccc"></div>
+          <div class="leg-ring" style="width:10px;height:10px;background:#aaa"></div>
+          <div class="leg-ring" style="width:15px;height:15px;background:#888"></div>
+        </div>
+        <span>Larger ring = lower-ranked (weaker) opponent</span>
+      </div>
+      <div class="leg-explain">
+        <div class="leg-range">
+          <div class="leg-ring" id="leg-pale-ring" style="width:11px;height:11px;background:rgb(255,220,225)"></div>
+          <div class="leg-ring" id="leg-vivid-ring" style="width:11px;height:11px;background:rgb(220,30,50)"></div>
+        </div>
+        <span>Pale → vivid = close game → blowout</span>
+      </div>
+      <div class="leg-explain">
+        <div class="leg-range">
+          <div class="leg-ring" style="width:11px;height:11px;background:rgb(220,30,50)"></div>
+        </div>
+        <span>Center dot = best win / best loss</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4: High-contrast toggle -->
+  <div class="leg-section">
+    <div class="leg-section-title">Accessibility</div>
+    <button class="hc-btn" id="hc-btn" onclick="toggleHC()">High-Contrast Mode</button>
+  </div>
+
+</div>
+
+<div id="arena">
+  <div class="half" id="hA" onclick="vote('A')">
+    <div class="phead">
+      <div class="side-letter">A</div>
+      <div class="rhs">
+        <div class="record" id="rec-A">—</div>
+        <div class="conf-tag" id="conf-A">Conference Hidden</div>
+      </div>
+    </div>
+    <div class="canvas-area">
+      <div class="ccol"><div class="ccol-inner"><canvas id="cvWA"></canvas><div class="ccol-label">Wins</div></div></div>
+      <div class="ccol"><div class="ccol-inner"><canvas id="cvLA"></canvas><div class="ccol-label">Losses</div></div></div>
+    </div>
+    <div class="stats-bar" id="sbA"></div>
+    <div class="vote-hint" id="vhA"><div class="vote-pill">Pick A</div></div>
+    <div class="reveal" id="rvA"></div>
+  </div>
+
+  <div class="gdiv"></div>
+
+  <div class="half" id="hB" onclick="vote('B')">
+    <div class="phead">
+      <div class="side-letter">B</div>
+      <div class="rhs">
+        <div class="record" id="rec-B">—</div>
+        <div class="conf-tag" id="conf-B">Conference Hidden</div>
+      </div>
+    </div>
+    <div class="canvas-area">
+      <div class="ccol"><div class="ccol-inner"><canvas id="cvWB"></canvas><div class="ccol-label">Wins</div></div></div>
+      <div class="ccol"><div class="ccol-inner"><canvas id="cvLB"></canvas><div class="ccol-label">Losses</div></div></div>
+    </div>
+    <div class="stats-bar" id="sbB"></div>
+    <div class="vote-hint" id="vhB"><div class="vote-pill">Pick B</div></div>
+    <div class="reveal" id="rvB"></div>
+  </div>
+
+  <div id="verdict">
+    <div class="vd-label">Result</div>
+    <div class="vd-text" id="vd-txt">—</div>
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next</button>
+  </div>
+</div>
+
+<script>
+// ── Worker API URL ────────────────────────────────────────────────────────────
+// Replace YOUR-SUBDOMAIN with your actual Cloudflare Workers subdomain
+const WORKER_URL = 'https://blindresume-api.objectivelydrew.workers.dev';
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FALLBACK DATA — Source: NCAA.com NET Rankings, through Feb 26 2026
+// Used if the Worker API is unavailable
+// ══════════════════════════════════════════════════════════════════════════════
+// Compact team data: name|net|w|l|conf|q1|q2|q3|q4
+const _RAW = `Michigan|1|25|2|Big Ten|10-1|9-1|4-0|2-0
+Duke|2|25|2|ACC|12-2|4-0|1-0|8-0
+Arizona|3|25|2|Big 12|11-2|5-0|3-0|6-0
+Illinois|4|22|6|Big Ten|7-5|6-1|4-0|5-0
+Gonzaga|5|27|2|WCC|6-1|5-0|9-1|7-0
+Purdue|6|22|5|Big Ten|8-5|4-0|7-0|3-0
+Florida|7|21|6|SEC|8-5|7-1|1-0|5-0
+Houston|8|23|4|Big 12|7-4|8-0|2-0|6-0
+Iowa St.|9|23|4|Big 12|6-4|9-0|1-0|7-0
+Connecticut|10|25|3|Big East|7-2|7-0|6-1|5-0
+Nebraska|11|23|4|Big Ten|6-4|5-0|6-0|6-0
+Michigan St.|12|22|5|Big Ten|6-5|6-0|5-0|5-0
+Louisville|13|20|7|ACC|6-7|4-0|2-0|8-0
+Texas Tech|14|20|7|Big 12|7-7|3-0|7-0|3-0
+Virginia|15|24|3|ACC|6-2|6-1|6-0|6-0
+Vanderbilt|16|21|6|SEC|7-5|6-1|2-0|6-0
+Tennessee|17|20|7|SEC|5-6|6-1|2-0|7-0
+Kansas|18|20|7|Big 12|7-6|7-1|2-0|4-0
+BYU|19|20|7|Big 12|6-6|6-1|3-0|5-0
+Arkansas|20|20|7|SEC|6-7|5-0|3-0|6-0
+Alabama|21|20|7|SEC|7-6|7-1|4-0|2-0
+Saint Louis|22|24|2|Atlantic 10|2-0|4-2|8-0|10-0
+Saint John's|23|22|5|Big East|3-4|8-0|8-1|3-0
+Utah St.|24|22|4|Mountain West|3-3|7-0|8-1|4-0
+Saint Mary's|25|24|4|WCC|1-3|6-1|10-0|7-0
+NC State|26|19|8|ACC|5-5|6-2|4-0|4-1
+North Carolina|27|21|6|ACC|5-6|3-0|8-0|5-0
+Iowa|28|19|8|Big Ten|3-7|5-0|5-1|6-0
+Kentucky|29|17|10|SEC|5-8|3-2|3-0|6-0
+Villanova|30|21|6|Big East|2-5|7-0|8-1|4-0
+SMU|31|19|8|ACC|4-6|4-2|4-0|7-0
+Wisconsin|32|19|8|Big Ten|5-7|5-1|3-0|6-0
+Auburn|33|15|12|SEC|5-10|2-2|2-0|6-0
+Georgia|34|19|8|SEC|5-6|5-1|0-1|9-0
+Miami (FL)|35|21|6|ACC|3-4|6-2|2-0|10-0
+Indiana|36|17|10|Big Ten|2-10|2-0|6-0|7-0
+Ohio St.|37|17|10|Big Ten|0-9|7-1|4-0|6-0
+Clemson|38|20|8|ACC|3-5|7-3|3-0|7-0
+Texas|39|16|10|SEC|5-7|2-2|2-1|7-0
+Santa Clara|40|22|6|WCC|1-4|7-1|9-0|5-1
+UCLA|41|18|9|Big Ten|3-7|4-2|4-0|7-0
+Texas A&M|42|19|8|SEC|4-5|4-3|3-0|8-0
+New Mexico|43|20|6|Mountain West|2-4|7-1|2-1|9-0
+San Diego St.|44|17|8|Mountain West|1-5|5-2|5-1|6-0
+VCU|45|21|7|Atlantic 10|1-5|4-2|8-0|8-0
+UCF|46|19|7|Big 12|4-5|5-2|3-0|7-0
+TCU|47|17|10|Big 12|4-7|3-1|3-1|7-1
+Miami (OH)|48|24|0|MAC|0-0|1-0|9-0|14-0
+Baylor|49|13|13|Big 12|2-10|5-3|1-0|5-0
+Virginia Tech|50|18|10|ACC|2-8|6-2|3-0|7-0
+Cincinnati|51|15|12|Big 12|2-9|4-2|2-0|7-1
+South Florida|52|18|8|American|2-2|4-3|7-3|5-0
+Seton Hall|53|19|9|Big East|1-4|5-3|7-2|6-0
+Belmont|54|24|4|MVC|0-0|5-1|11-3|8-0
+Tulsa|55|20|6|American|0-1|3-3|8-2|9-0
+Washington|56|13|14|Big Ten|1-9|5-3|2-2|5-0
+McNeese|57|21|5|Southland|0-2|2-2|5-0|14-1
+Southern California|58|17|9|Big Ten|2-6|7-1|5-2|3-0
+California|59|18|8|ACC|4-5|1-3|5-0|8-0
+Akron|60|20|5|MAC|0-2|0-1|7-2|13-0
+Missouri|61|18|9|SEC|4-5|4-4|2-0|8-0
+Boise St.|62|15|10|Mountain West|2-6|4-3|6-1|3-0
+West Virginia|63|16|11|Big 12|4-7|2-3|2-1|8-0
+Yale|64|19|4|Ivy League|0-1|1-0|8-2|10-1
+Wake Forest|65|14|13|ACC|1-9|4-4|2-0|7-0
+Nevada|66|18|9|Mountain West|1-5|5-2|9-0|3-2
+LSU|67|14|13|SEC|1-10|2-1|3-2|8-0
+Arizona St.|68|14|13|Big 12|3-9|4-3|4-0|3-1
+Colorado|69|15|12|Big 12|1-8|3-3|7-1|4-0
+High Point|70|23|4|Big South|0-0|0-2|4-2|19-0
+Oklahoma|71|13|14|SEC|2-9|2-5|2-0|7-0
+Stanford|72|16|11|ACC|4-6|2-2|3-3|7-0
+Minnesota|73|13|14|Big Ten|2-8|3-4|1-2|7-0
+Florida St.|74|14|13|ACC|3-8|3-4|0-1|8-0
+Grand Canyon|75|17|10|Mountain West|3-4|4-3|1-2|9-1
+Syracuse|76|15|13|ACC|1-8|4-3|3-2|7-0
+Utah Valley|77|17|7|WAC|0-2|0-2|9-2|8-1
+Providence|78|12|15|Big East|1-10|1-4|5-1|5-0
+Northwestern|79|11|16|Big Ten|1-10|1-5|4-1|5-0
+Butler|80|15|13|Big East|2-6|2-6|6-1|5-0
+SFA|81|23|3|Southland|0-1|2-1|5-1|16-0
+Creighton|82|14|14|Big East|2-9|2-4|6-1|4-0
+Oklahoma St.|83|16|11|Big 12|1-8|6-3|2-0|7-0
+Dayton|84|18|9|Atlantic 10|0-5|5-0|5-4|8-0
+Northern Iowa|85|17|11|MVC|0-2|3-5|4-4|10-0
+Wichita St.|86|17|10|American|1-3|3-3|3-3|10-1
+George Washington|87|14|12|Atlantic 10|0-3|1-4|6-3|7-2
+Colorado St.|88|16|10|Mountain West|1-5|5-4|2-0|8-1
+Notre Dame|89|12|15|ACC|2-9|1-5|1-0|8-1
+Liberty|90|20|4|CUSA|0-1|2-0|6-3|12-0
+Ole Miss|91|11|16|SEC|1-12|2-2|2-2|6-0
+UNCW|92|22|4|CAA|0-0|0-1|8-2|14-1
+Georgetown|93|13|14|Big East|0-8|4-4|3-2|6-0
+Illinois St.|94|17|11|MVC|0-2|2-3|7-5|8-1
+Hofstra|95|17|10|CAA|0-1|2-2|6-5|9-2
+Mississippi St.|96|13|14|SEC|2-9|3-3|3-2|5-0
+Wyoming|97|14|12|Mountain West|1-6|0-6|4-0|9-0
+Xavier|98|13|14|Big East|0-8|3-5|4-1|6-0
+George Mason|99|20|6|Atlantic 10|0-1|1-2|9-3|10-0
+Kansas St.|100|11|16|Big 12|0-11|5-4|1-1|5-0
+Murray St.|101|20|10|MVC|0-2|4-4|6-4|10-0
+Sam Houston|102|16|8|CUSA|0-1|0-2|9-4|7-1
+DePaul|103|14|13|Big East|1-5|2-5|5-2|6-1
+Hawaii|104|17|7|Big West|0-0|0-4|5-2|12-1
+South Carolina|105|12|15|SEC|1-9|1-6|1-0|9-0
+Pacific|106|15|13|WCC|0-6|0-4|3-3|12-0
+Davidson|107|14|11|Atlantic 10|0-4|1-3|7-3|6-1
+Marquette|108|9|18|Big East|0-9|0-6|5-3|4-0
+UAB|109|17|10|American|2-1|2-2|5-5|8-2
+Illinois-Chicago|110|14|13|MVC|0-2|4-3|3-7|7-1
+Bradley|111|18|10|MVC|0-1|3-4|7-4|8-1
+North Dakota St.|112|20|6|Summit League|0-0|0-0|6-4|14-2
+Oregon|113|10|17|Big Ten|1-11|0-5|3-1|6-0
+Saint Thomas (MN)|114|18|8|Summit League|0-1|0-2|5-3|13-2
+Cal Baptist|115|19|8|WAC|0-2|1-3|7-3|11-0
+Memphis|116|12|15|American|0-6|2-5|4-3|6-1
+Utah|117|10|17|Big 12|1-10|2-5|2-1|5-1
+Southern Ill.|118|13|15|MVC|2-1|2-6|4-7|5-1
+ETSU|119|19|8|SoCon|0-1|0-2|3-0|16-5
+William & Mary|120|14|11|CAA|0-1|2-1|3-6|9-3
+Fla. Atlantic|121|13|13|American|0-3|1-5|6-3|6-2
+Pittsburgh|122|10|17|ACC|0-10|2-3|3-3|5-1
+UC San Diego|123|17|9|Big West|0-1|2-1|7-4|8-3
+UC Irvine|124|16|10|Big West|0-0|1-3|3-7|12-0
+Seattle U|125|15|12|WCC|1-5|1-2|2-4|11-1
+Winthrop|126|17|9|Big South|0-4|1-1|2-1|14-3
+UNLV|127|13|13|Mountain West|3-2|3-5|2-3|5-3
+Duquesne|128|14|11|Atlantic 10|0-4|2-2|4-4|8-1
+San Francisco|129|14|15|WCC|0-6|3-4|5-2|6-3
+Washington St.|130|11|17|WCC|0-5|0-9|4-2|7-1
+Rhode Island|131|15|12|Atlantic 10|2-0|2-7|4-2|7-3
+Penn St.|132|11|17|Big Ten|1-8|1-6|2-3|7-0
+Fresno St.|133|11|15|Mountain West|0-6|0-5|5-2|6-2
+Austin Peay|134|19|6|ASUN|0-1|0-3|2-2|17-0
+UTRGV|135|14|12|Southland|0-3|1-1|4-2|9-6
+UC Santa Barbara|136|15|11|Big West|0-1|1-2|3-5|11-3
+Kent St.|137|18|7|MAC|0-2|0-1|10-3|8-1
+Portland St.|138|15|8|Big Sky|0-2|0-1|7-2|8-3
+Richmond|139|14|13|Atlantic 10|1-2|0-4|7-6|6-1
+Navy|140|21|6|Patriot|0-1|0-3|1-0|20-2
+Troy|141|16|11|Sun Belt|1-1|2-0|4-7|9-3
+Maryland|142|11|16|Big Ten|2-10|2-3|2-3|5-0
+Arkansas St.|143|16|11|Sun Belt|0-2|0-1|8-3|8-5
+Montana St.|144|12|13|Big Sky|0-4|0-0|6-5|6-4
+Harvard|145|14|10|Ivy League|1-1|0-2|4-3|9-4
+Northern Colo.|146|15|10|Big Sky|1-1|0-0|5-5|9-4
+Wright St.|147|16|11|Horizon|0-1|0-2|2-6|14-2
+Marshall|148|17|11|Sun Belt|0-1|0-2|7-4|10-4
+Bowling Green|149|13|12|MAC|0-1|1-3|3-6|9-2
+Valparaiso|150|15|13|MVC|0-2|1-8|7-2|7-1
+North Texas|151|14|12|American|0-3|1-4|5-2|8-3
+Saint Joseph's|152|15|10|Atlantic 10|0-3|0-3|8-2|7-2
+Western Ky.|153|14|11|CUSA|0-1|2-3|3-5|9-2
+Robert Morris|154|17|10|Horizon|0-1|0-0|8-3|9-6
+St. Bonaventure|155|13|13|Atlantic 10|0-3|2-1|4-7|7-2
+Col. of Charleston|156|18|10|CAA|0-1|1-3|5-5|12-1
+Rutgers|157|11|16|Big Ten|0-12|1-3|4-0|6-1
+Middle Tenn.|158|10|14|CUSA|0-2|0-4|5-4|5-4
+Utah Tech|159|14|12|WAC|0-3|0-5|7-2|7-2
+Toledo|160|12|13|MAC|0-2|0-2|3-8|9-1
+UT Arlington|161|13|12|WAC|0-2|1-2|5-5|7-3
+Penn|162|12|11|Ivy League|0-2|0-3|3-4|9-2
+Cornell|163|10|12|Ivy League|0-2|0-2|2-5|8-3
+LMU (CA)|164|13|15|WCC|0-4|1-4|5-3|7-4
+Boston College|165|9|18|ACC|0-7|0-6|4-4|5-1
+Cal St. Northridge|166|16|10|Big West|0-1|1-4|7-3|8-2
+Oakland|167|14|14|Horizon|0-5|0-1|6-4|8-4
+Lipscomb|168|16|11|ASUN|0-4|0-1|3-3|13-3
+Marist|169|17|10|MAAC|0-0|0-1|0-6|17-3
+Idaho|170|12|13|Big Sky|0-0|1-2|5-8|6-3
+Georgia Tech|171|11|17|ACC|1-9|0-3|0-5|10-0
+UC Davis|172|15|11|Big West|1-1|0-3|5-6|9-1
+Mercer|173|15|11|SoCon|0-3|0-3|1-3|14-2
+Temple|174|14|12|American|0-1|2-2|2-7|10-2
+South Alabama|175|18|9|Sun Belt|0-0|0-2|8-5|10-2
+Kennesaw St.|176|13|11|CUSA|0-1|0-3|3-4|10-3
+Fordham|177|13|12|Atlantic 10|0-1|2-3|3-5|8-3
+New Mexico St.|178|10|13|CUSA|0-0|1-2|4-7|5-4
+Central Ark.|179|16|11|ASUN|0-4|0-1|2-1|14-5
+Merrimack|180|20|9|MAAC|0-2|0-1|3-5|17-1
+Charlotte|181|13|13|American|0-3|0-4|3-4|10-2
+App State|182|17|11|Sun Belt|0-1|1-0|2-6|14-4
+Oregon St.|183|15|14|WCC|1-2|1-5|9-5|4-2
+Tulane|184|16|10|American|0-1|2-3|4-5|10-1
+Towson|185|12|14|CAA|0-3|1-2|3-6|8-3
+Columbia|186|13|10|Ivy League|0-3|0-0|2-3|11-4
+Buffalo|187|14|11|MAC|0-1|1-2|3-4|10-4
+Siena|188|19|10|MAAC|0-1|0-0|1-5|18-4
+UT Martin|189|17|9|OVC|0-1|2-1|0-2|15-5
+Furman|190|15|11|SoCon|0-0|0-4|5-3|10-4
+FIU|191|10|14|CUSA|0-3|0-1|2-6|8-4
+Cal St. Fullerton|192|13|14|Big West|0-2|1-4|4-6|8-2
+Montana|193|11|13|Big Sky|0-3|1-0|3-6|7-4
+Weber St.|194|13|14|Big Sky|0-1|0-4|3-6|10-3
+Monmouth|195|13|14|CAA|0-1|0-3|6-4|7-6
+UMass|196|14|13|MAC|0-2|1-1|5-7|8-3
+Northern Ky.|197|14|12|Horizon|0-1|0-1|1-6|13-4
+LIU|198|19|10|NEC|0-2|0-2|1-3|18-3
+A&M-Corpus Christi|199|10|14|Southland|0-3|1-4|1-4|8-3
+Drake|200|10|17|MVC|0-1|1-7|4-8|5-1
+Youngstown St.|201|12|14|Horizon|1-0|0-1|2-6|9-7
+Elon|202|12|14|CAA|0-2|2-1|4-3|6-8
+South Dakota St.|203|10|16|Summit League|0-1|0-6|1-4|9-5
+Quinnipiac|204|17|11|MAAC|0-2|1-2|3-2|13-5
+Queens (NC)|205|16|12|ASUN|0-5|0-1|0-3|16-3
+Eastern Wash.|206|10|17|Big Sky|0-3|0-2|4-11|6-1
+James Madison|207|15|13|Sun Belt|0-2|0-1|5-5|10-5
+Campbell|208|11|15|CAA|0-5|1-3|3-5|7-2
+Howard|209|14|10|MEAC|0-1|1-3|1-0|12-6
+New Orleans|210|13|15|Southland|1-4|1-3|2-3|9-5
+Stony Brook|211|15|11|CAA|0-1|0-2|5-5|10-3
+Drexel|212|14|14|CAA|0-0|0-2|3-7|11-5
+Samford|213|14|13|SoCon|0-2|1-1|1-6|12-4
+Ohio|214|13|13|MAC|0-3|0-2|5-5|8-3
+Tennessee St.|215|16|9|OVC|0-2|1-0|1-1|14-6
+SE Missouri St.|216|15|11|OVC|0-3|0-0|2-1|13-7
+Colgate|217|15|12|Patriot|0-3|0-0|2-4|13-5
+Jacksonville St.|218|10|14|CUSA|0-0|1-2|4-5|5-7
+Missouri St.|219|10|14|CUSA|0-1|0-2|2-7|8-4
+Idaho St.|220|9|17|Big Sky|0-2|0-2|3-10|6-3
+Tarleton St.|221|10|14|WAC|0-4|0-1|2-7|8-2
+Green Bay|222|14|14|Horizon|0-2|0-2|5-6|9-4
+Denver|223|12|15|Summit League|0-3|2-3|3-3|7-6
+Coastal Carolina|224|16|12|Sun Belt|0-1|1-1|4-4|11-6
+Lamar|225|10|16|Southland|0-3|0-3|1-5|9-5
+Vermont|226|16|11|America East|0-0|0-2|0-4|16-5
+Portland|227|10|17|WCC|1-3|0-7|4-5|5-2
+Cal Poly|228|10|16|Big West|0-2|3-1|4-6|3-7
+Indiana St.|229|8|19|MVC|0-2|1-5|1-8|6-4
+La Salle|230|7|19|Atlantic 10|0-5|1-4|3-9|3-1
+UNC Asheville|231|10|15|Big South|0-2|0-5|0-2|10-6
+Abilene Christian|232|10|14|WAC|0-2|0-3|2-7|8-2
+Eastern Mich.|233|9|18|MAC|1-2|0-3|0-7|8-6
+San Diego|234|9|18|WCC|0-4|1-5|2-3|6-6
+Saint Peter's|235|14|11|MAAC|0-2|0-1|1-3|13-5
+Iona|236|16|13|MAAC|0-1|0-1|3-4|13-7
+Southern Miss.|237|13|14|Sun Belt|0-2|0-2|3-6|10-4
+Wofford|238|16|11|SoCon|0-1|0-2|1-4|15-4
+UMBC|239|16|8|America East|0-1|0-3|0-1|16-3
+Texas St.|240|16|12|Sun Belt|0-0|0-0|3-9|13-3
+Fairfield|241|17|11|MAAC|0-1|0-1|2-4|15-5
+Dartmouth|242|9|13|Ivy League|0-2|0-3|4-1|5-7
+Louisiana Tech|243|12|12|CUSA|0-1|0-1|3-8|9-2
+Detroit Mercy|244|12|13|Horizon|0-1|0-3|2-5|10-4
+Radford|245|12|14|Big South|0-3|0-4|0-4|12-3
+Omaha|246|11|14|Summit League|0-1|0-3|4-6|7-4
+American|247|14|13|Patriot|0-3|0-1|1-3|13-6
+FGCU|248|12|15|ASUN|0-3|0-1|1-5|11-6
+Rice|249|9|16|American|0-2|1-3|3-5|5-6
+Old Dominion|250|9|19|Sun Belt|0-2|0-4|3-8|6-5
+Western Caro.|251|10|15|SoCon|0-5|1-0|2-4|7-6
+Purdue Fort Wayne|252|13|13|Horizon|0-3|1-1|3-4|9-5
+San Jose St.|253|6|20|Mountain West|0-6|1-10|0-4|5-0
+Bethune-Cookman|254|14|13|SWAC|0-6|0-2|1-0|13-5
+Nicholls|255|10|17|Southland|0-2|1-5|2-4|7-6
+Milwaukee|256|10|19|Horizon|0-4|0-1|2-7|8-7
+Princeton|257|7|18|Ivy League|0-2|1-0|1-9|5-7
+Lindenwood|258|13|13|OVC|0-3|0-0|1-3|12-7
+Charleston So.|259|10|16|Big South|0-2|0-3|1-2|9-9
+Ga. Southern|260|13|14|Sun Belt|0-1|0-0|2-5|11-8
+NC A&T|261|9|15|CAA|0-0|0-3|2-7|7-5
+Morehead St.|262|14|12|OVC|0-3|0-2|1-2|13-5
+UTEP|263|7|17|CUSA|0-1|0-4|3-7|4-5
+SIUE|264|14|12|OVC|0-1|0-0|2-2|12-9
+Long Beach St.|265|6|20|Big West|0-2|0-4|1-10|5-4
+Hampton|266|10|16|CAA|0-1|0-2|1-7|9-6
+Sacramento St.|267|6|18|Big Sky|0-3|0-2|2-10|4-3
+Presbyterian|268|11|15|Big South|0-3|0-1|2-3|9-8
+Longwood|269|12|15|Big South|0-2|0-3|1-3|11-7
+Boston U.|270|12|16|Patriot|0-0|0-2|1-5|11-9
+East Carolina|271|8|18|American|0-3|1-2|1-6|6-7
+Delaware|272|9|17|CUSA|0-1|1-2|4-4|4-10
+Pepperdine|273|6|21|WCC|0-6|0-3|1-8|5-4
+Southern U.|274|10|14|SWAC|0-5|0-2|0-1|10-6
+North Dakota|275|13|15|Summit League|0-2|1-2|2-4|10-7
+Chattanooga|276|9|17|SoCon|0-2|0-2|2-3|7-10
+Eastern Ky.|277|9|18|ASUN|0-1|0-4|1-7|8-6
+UC Riverside|278|7|20|Big West|0-3|0-4|2-8|5-5
+Brown|279|7|15|Ivy League|0-1|0-3|0-4|7-7
+Southern Utah|280|6|19|WAC|0-3|0-3|3-9|3-4
+Incarnate Word|281|8|17|Southland|0-3|1-4|1-3|6-7
+Mercyhurst|282|12|15|NEC|0-2|0-3|0-2|12-8
+Northeastern|283|6|20|CAA|0-1|0-3|3-9|3-7
+Central Mich.|284|7|18|MAC|0-4|0-2|2-5|5-7
+Central Conn. St.|285|14|11|NEC|0-1|0-0|2-3|12-7
+Grambling|286|9|15|SWAC|0-2|0-1|1-3|8-9
+USC Upstate|287|9|17|Big South|0-3|1-4|0-3|8-7
+Le Moyne|288|13|15|NEC|0-1|0-1|1-5|12-8
+Bellarmine|289|9|17|ASUN|0-2|0-4|0-3|9-8
+South Dakota|290|11|15|Summit League|0-1|0-5|1-6|10-3
+Mount St. Mary's|291|13|15|MAAC|0-3|0-0|1-6|12-6
+Georgia St.|292|8|19|Sun Belt|0-2|0-0|4-9|4-8
+Northwestern St.|293|7|19|Southland|0-4|0-3|2-3|5-9
+Western Mich.|294|8|17|MAC|0-4|0-1|1-7|7-5
+East Texas A&M|295|9|18|Southland|0-4|0-3|1-3|8-8
+Northern Ariz.|296|7|18|Big Sky|0-2|0-1|2-8|5-7
+Sacred Heart|297|11|18|MAAC|0-1|0-2|2-4|9-11
+Lehigh|298|11|16|Patriot|0-2|0-0|1-6|10-8
+Southeastern La.|299|7|20|Southland|0-2|0-6|1-5|6-7
+UNC Greensboro|300|10|17|SoCon|0-2|0-2|1-5|9-8
+Houston Christian|301|8|18|Southland|0-2|0-4|1-4|7-8
+Tennessee Tech|302|10|16|OVC|0-2|0-0|1-3|9-11
+Evansville|303|4|22|MVC|0-1|0-9|3-9|1-3
+Norfolk St.|304|10|14|MEAC|0-2|0-1|0-5|10-6
+Jacksonville|305|8|19|ASUN|0-4|0-2|0-6|8-7
+Alabama A&M|306|13|12|SWAC|0-2|0-1|0-2|13-7
+Little Rock|307|9|18|OVC|0-1|0-3|0-6|9-8
+Louisiana|308|10|19|Sun Belt|0-3|0-0|2-8|8-8
+West Georgia|309|10|16|ASUN|0-3|0-0|1-4|9-9
+Loyola Chicago|310|6|22|Atlantic 10|1-2|1-5|0-11|4-4
+NJIT|311|14|14|America East|0-3|0-1|2-5|12-5
+IU Indy|312|5|22|Horizon|0-2|0-1|3-6|2-13
+Cleveland St.|313|7|19|Horizon|0-1|0-2|2-8|5-8
+Wagner|314|8|16|NEC|0-2|0-1|0-4|8-9
+UMass Lowell|315|10|15|America East|0-3|0-1|0-5|10-6
+Ark.-Pine Bluff|316|10|16|SWAC|0-6|1-1|0-3|9-6
+Texas Southern|317|8|16|SWAC|0-5|0-0|0-2|8-9
+Northern Ill.|318|7|17|MAC|0-3|0-3|1-6|6-5
+Alabama St.|319|8|19|SWAC|0-5|1-2|0-1|7-11
+Albany|320|7|18|America East|0-0|0-5|1-5|6-8
+New Haven|321|10|15|NEC|0-3|0-0|0-4|10-8
+Eastern Ill.|322|8|18|OVC|0-3|0-1|0-5|8-9
+Ball St.|323|6|19|MAC|0-2|0-2|0-9|6-6
+Holy Cross|324|8|19|Patriot|0-1|0-2|1-4|7-12
+Manhattan|325|11|17|MAAC|0-2|0-1|1-5|10-9
+Stetson|326|8|19|ASUN|0-3|0-3|0-5|8-8
+Loyola Maryland|327|9|18|Patriot|0-1|0-2|0-3|9-12
+Cal St. Bakersfield|328|6|20|Big West|0-2|1-3|1-9|4-6
+Prairie View|329|7|17|SWAC|0-3|0-2|0-2|7-10
+Lafayette|330|8|20|Patriot|0-2|0-0|0-6|8-12
+Fairleigh Dickinson|331|8|18|NEC|0-3|0-1|0-3|8-11
+Florida A&M|332|9|15|SWAC|0-4|0-0|0-2|9-9
+Army West Point|333|9|18|Patriot|0-1|0-1|1-7|8-9
+Oral Roberts|334|4|22|Summit League|0-2|0-5|2-6|2-9
+North Florida|335|4|23|ASUN|0-4|0-2|0-5|4-12
+Bucknell|336|8|21|Patriot|0-3|0-1|0-6|8-11
+Stonehill|337|8|19|NEC|0-1|0-3|0-2|8-13
+New Hampshire|338|6|18|America East|0-3|0-2|0-3|6-10
+Chicago St.|339|6|22|NEC|0-4|0-3|0-3|6-12
+Maine|340|6|21|America East|0-1|0-1|0-8|6-11
+North Ala.|341|6|19|ASUN|0-1|1-2|1-5|4-11
+UTSA|342|3|22|American|0-5|0-2|2-7|1-8
+Southern Indiana|343|5|21|OVC|0-0|0-1|1-5|4-15
+Jackson St.|344|9|18|SWAC|0-6|0-1|0-2|9-9
+Alcorn St.|345|7|19|SWAC|0-6|0-1|0-3|7-9
+NC Central|346|6|16|MEAC|0-4|0-2|0-3|6-7
+Niagara|347|6|21|MAAC|0-2|0-1|0-4|6-14
+Canisius|348|8|20|MAAC|0-1|0-3|0-5|8-11
+UMES|349|6|20|MEAC|0-5|0-1|0-2|6-12
+Air Force|350|3|24|Mountain West|0-6|0-7|0-8|3-3
+The Citadel|351|6|20|SoCon|0-0|0-3|0-6|6-11
+Morgan St.|352|8|14|MEAC|0-1|0-3|1-1|7-9
+Saint Francis|353|4|22|NEC|0-3|0-2|0-4|4-13
+Bryant|354|6|19|America East|0-3|0-0|0-6|6-10
+ULM|355|2|25|Sun Belt|0-1|0-4|0-7|2-13
+UMKC|356|1|24|Summit League|0-3|0-4|0-6|1-11
+Rider|357|3|23|MAAC|0-4|0-0|0-5|3-14
+SC State|358|5|19|MEAC|0-3|0-2|0-4|5-10
+VMI|359|3|23|SoCon|0-2|0-1|0-7|3-13
+Binghamton|360|3|23|America East|0-0|0-3|0-2|3-18
+Delaware St.|361|3|19|MEAC|0-1|0-1|0-6|3-11
+Western Ill.|362|2|24|OVC|0-1|0-1|0-4|2-18
+Gardner-Webb|363|1|25|Big South|0-4|0-4|0-6|1-11
+Coppin St.|364|6|21|MEAC|0-3|0-2|0-6|6-10
+Mississippi Val.|365|1|26|SWAC|0-4|0-4|0-1|1-17`;
+
+// Parse a raw pipe-delimited string into TEAM_DATA format
+function parseRaw(raw) {
+  return Object.fromEntries(
+    raw.trim().split('\n').map(row => {
+      const [name, net, w, l, conf, q1, q2, q3, q4] = row.split('|');
+      return [name, { net:+net, w:+w, l:+l, conf, q1, q2, q3, q4 }];
+    })
+  );
+}
+
+// Parse API response teams array into TEAM_DATA format
+function parseApiTeams(teams) {
+  return Object.fromEntries(
+    teams.map(t => [t.name, { net:t.rank, w:t.w, l:t.l, conf:t.conf, q1:t.q1, q2:t.q2, q3:t.q3, q4:t.q4 }])
+  );
+}
+
+// Initialized by initData() below — mutable so API can replace fallback
+let TEAM_DATA = parseRaw(_RAW);
+let ALL_TEAMS = Object.keys(TEAM_DATA);
+
+// Update footer with data timestamp
+function setFooterDate(throughDate, lastUpdated) {
+  const text = throughDate
+    ? `© 2026 ObjectivelyDrew · NET rankings through ${throughDate} via NCAA.com`
+    : `© 2026 ObjectivelyDrew · NET rankings data sourced Feb 26, 2026 via NCAA.com`;
+  document.querySelectorAll('.site-footer, .intro-footer').forEach(el => el.textContent = text);
+}
+
+// Fetch live data from Worker, fall back to _RAW if unavailable
+async function initData() {
+  try {
+    const res = await fetch(WORKER_URL, { signal: AbortSignal.timeout(4000) });
+    if (!res.ok) throw new Error('API error');
+    const data = await res.json();
+    if (data.teams && data.teams.length >= 100) {
+      TEAM_DATA = parseApiTeams(data.teams);
+      ALL_TEAMS = Object.keys(TEAM_DATA);
+      setFooterDate(data.throughDate);
+    }
+  } catch(e) {
+    // Silently fall back to hardcoded _RAW data
+    console.warn('Using fallback data:', e.message);
+  }
+}
+
+// All 365 teams with conference (used for pool selection) — kept for compatibility
+
+// ── Seeded RNG for stable game generation per team ──
+function mkRng(seed) {
+  let s = seed | 0;
+  return () => {
+    s += 0x6D2B79F5;
+    let t = Math.imul(s ^ s >>> 15, 1 | s);
+    t ^= t + Math.imul(t ^ t >>> 7, 61 | t);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function hash(str) {
+  let h = 0;
+  for (const c of str) h = (Math.imul(31, h) + c.charCodeAt(0)) | 0;
+  return Math.abs(h);
+}
+
+// ── Expand Q record string "w-l" into count pair ──
+function parseQ(s) {
+  const [w, l] = s.split('-').map(Number);
+  return { w, l };
+}
+
+// ── Quadrant colors: Q1=red, Q2=orange, Q3=yellow, Q4=gray ──
+// Q_RGB and Q_PALE defined below in the drawing section
+
+// ── Determine quadrant from opponent rank + game location ──
+function getQuadrant(oppRank, loc) {
+  if (loc === 'home') {
+    if (oppRank <=  30) return 1;
+    if (oppRank <=  75) return 2;
+    if (oppRank <= 160) return 3;
+    return 4;
+  } else if (loc === 'neutral') {
+    if (oppRank <=  50) return 1;
+    if (oppRank <= 100) return 2;
+    if (oppRank <= 200) return 3;
+    return 4;
+  } else { // away
+    if (oppRank <=  75) return 1;
+    if (oppRank <= 135) return 2;
+    if (oppRank <= 240) return 3;
+    return 4;
+  }
+}
+
+// ── Rank ranges per quadrant per location ──
+const Q_LOC_RANGES = {
+  q1: { home: [1,30],    neutral: [1,50],    away: [1,75]    },
+  q2: { home: [31,75],   neutral: [51,100],  away: [76,135]  },
+  q3: { home: [76,160],  neutral: [101,200], away: [136,240] },
+  q4: { home: [161,365], neutral: [201,365], away: [241,365] },
+};
+
+// Location distribution: ~40% home, 20% neutral, 40% away
+const LOCS = ['home','home','neutral','away','away'];
+
+// ── Build game list from real Q records ──
+function buildGames(name) {
+  const d = TEAM_DATA[name];
+  if (!d) return [];
+  const rng = mkRng(hash(name));
+  const games = [];
+
+  function addGames(qKey, isWin) {
+    const q = parseQ(d[qKey]);
+    const count = isWin ? q.w : q.l;
+    for (let i = 0; i < count; i++) {
+      const loc = LOCS[Math.floor(rng() * LOCS.length)];
+      const [lo, hi] = Q_LOC_RANGES[qKey][loc];
+      const oppRank = Math.round(lo + rng() * (hi - lo));
+      const margin = isWin
+        ? Math.round(2 + rng() * 28)
+        : -Math.round(1 + rng() * 22);
+      const quad = getQuadrant(oppRank, loc);
+      games.push({ w: isWin, opp: oppRank, loc, quad, m: margin });
+    }
+  }
+
+  ['q1','q2','q3','q4'].forEach(q => {
+    addGames(q, true);
+    addGames(q, false);
+  });
+
+  return games;
+}
+
+// ── Build full team object ──
+function getTeam(name) {
+  const d = TEAM_DATA[name];
+  if (!d) return null;
+  const games = buildGames(name);
+  const wg = games.filter(g => g.w);
+  const lg = games.filter(g => !g.w);
+  const q1d = parseQ(d.q1), q2d = parseQ(d.q2);
+  return {
+    name,
+    conf: d.conf,
+    netRank: d.net,
+    wins: d.w,
+    losses: d.l,
+    games,
+    q1: `${q1d.w}-${q1d.l}`,
+    q2: `${q2d.w}-${q2d.l}`,
+    awm: wg.length ? (wg.reduce((s,g) => s+g.m, 0) / wg.length).toFixed(1) : '—',
+    alm: lg.length ? (lg.reduce((s,g) => s+Math.abs(g.m), 0) / lg.length).toFixed(1) : '—',
+    sos: games.length ? Math.round(games.reduce((s,g) => s+g.opp, 0) / games.length) : 0
+  };
+}
+
+// ── Canvas ring visualization ──
+// Each game = one filled circle. Sorted largest→smallest so they layer.
+// Larger radius = better opponent (lower rank #).
+
+// Full saturated RGB per quadrant and pale tint for close games
+// Standard palette: Q1=red, Q2=orange, Q3=yellow, Q4=gray
+const Q_RGB  = { 1:[220,30,50],  2:[230,120,0],  3:[210,185,0],  4:[190,190,190] };
+const Q_PALE = { 1:[255,220,225],2:[255,235,210], 3:[255,252,210],4:[240,240,240] };
+
+// Okabe-Ito high-contrast palette (color-blind safe)
+// Q1=blue, Q2=vermillion, Q3=bluish green, Q4=orange
+const Q_RGB_HC  = { 1:[0,114,178],   2:[213,94,0],   3:[0,158,115],  4:[230,159,0]  };
+const Q_PALE_HC = { 1:[210,235,255], 2:[255,225,210], 3:[200,245,235],4:[255,240,200]};
+
+let hcMode = false;
+
+function marginColor(quad, margin) {
+  const rgb  = hcMode ? Q_RGB_HC  : Q_RGB;
+  const pale = hcMode ? Q_PALE_HC : Q_PALE;
+  const t = Math.min(1, Math.abs(margin) / 25);
+  const lo = pale[quad] || pale[4];
+  const hi = rgb[quad]  || rgb[4];
+  const r = Math.round(lo[0] + (hi[0] - lo[0]) * t);
+  const g = Math.round(lo[1] + (hi[1] - lo[1]) * t);
+  const b = Math.round(lo[2] + (hi[2] - lo[2]) * t);
+  return { css: `rgb(${r},${g},${b})` };
+}
+
+function drawRings(canvas, games, isWin) {
+  const col = canvas.closest('.ccol');
+  const size = Math.min(col.clientWidth, col.clientHeight - 24) || 200;
+  const W = size, H = size;
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+  if (!games.length) return;
+
+  const cx = W / 2, cy = H / 2;
+  const maxR = Math.min(W, H) * 0.46;
+  const minR = maxR * 0.06;
+
+  // Rank 1 → minR (innermost), rank 365 → maxR (outermost)
+  const withR = games.map(g => {
+    const t = (g.opp - 1) / 364;
+    const r = minR + (maxR - minR) * t;
+    const mc = marginColor(g.quad, g.m);
+    return { ...g, r, color: mc.css };
+  });
+
+  // Draw largest-first: each smaller circle covers only the center,
+  // leaving every ring's outer band visible as a distinct colored ring.
+  // A thin stroke on each circle's edge separates adjacent rings of similar color.
+  [...withR].sort((a, b) => b.r - a.r).forEach(g => {
+    ctx.beginPath();
+    ctx.arc(cx, cy, g.r, 0, Math.PI * 2);
+    ctx.fillStyle = g.color;
+    ctx.fill();
+    // Thin white stroke along the outer edge for ring separation
+
+  });
+
+  // Best game (innermost dot) uses the same color scheme as all other rings — no special override.
+}
+
+function renderStats(el, td) {
+  el.innerHTML = `
+    <div class="stt"><div class="stt-l">Q1 Record</div><div class="stt-v">${td.q1}</div></div>
+    <div class="stt"><div class="stt-l">Q2 Record</div><div class="stt-v">${td.q2}</div></div>
+    <div class="stt"><div class="stt-l">Avg Win Margin</div><div class="stt-v">+${td.awm}</div></div>
+    <div class="stt"><div class="stt-l">Avg Loss Margin</div><div class="stt-v">−${td.alm}</div></div>
+  `;
+}
+
+function showReveal(s, td, isW, wasPick) {
+  const el = document.getElementById('rv' + s);
+  el.classList.add('show');
+  let badge;
+  if (isW && wasPick)  badge = '<div class="rev-badge bpw">✓ Your Pick · Higher Rank</div>';
+  else if (isW)        badge = '<div class="rev-badge bwin">⬆ Higher Rank</div>';
+  else if (wasPick)    badge = '<div class="rev-badge bpl">✗ Your Pick · Lower Rank</div>';
+  else                 badge = '<div class="rev-badge blose">Lower Rank</div>';
+  el.innerHTML = `
+    <div class="rev-name">${td.name}</div>
+    <div class="rev-conf">${td.conf}</div>
+    <div class="rev-rec">${td.wins}–${td.losses} · NET #${td.netRank}</div>
+    ${badge}
+    <div class="rev-detail">Q1 ${td.q1} &nbsp;·&nbsp; Q2 ${td.q2} &nbsp;·&nbsp; SOS ~#${td.sos}</div>
+  `;
+}
+
+// ── Difficulty tiers ──
+// Each tier: { label, pool fn, minGap, maxGap, count }
+const TIERS = [
+  { n:1, label:'Tier 1 · Easy',   pool: () => ALL_TEAMS,                          minGap:  75, maxGap: 999, count: 5 },
+  { n:2, label:'Tier 2 · Medium', pool: () => ALL_TEAMS,                          minGap:  75, maxGap: 150, count: 5 },
+  { n:3, label:'Tier 3 · Hard',   pool: () => ALL_TEAMS.filter(n => TEAM_DATA[n].net <= 200), minGap: 25, maxGap:  50, count: 5 },
+  { n:4, label:'Tier 4 · Expert', pool: () => ALL_TEAMS.filter(n => TEAM_DATA[n].net <=  75), minGap:  1, maxGap:  20, count: 5 },
+];
+
+// Per-tier results tracking
+const tierResults = [[], [], [], []]; // arrays of true/false per answer
+
+// ── State ──
+let tA, tB, voted = false, correct = 0, questionNum = 0;
+
+function currentTier() {
+  let q = 0;
+  for (const t of TIERS) { q += t.count; if (questionNum < q) return t; }
+  return TIERS[TIERS.length - 1];
+}
+
+function tierIndex() {
+  let q = 0, i = 0;
+  for (const t of TIERS) { q += t.count; if (questionNum < q) return i; i++; }
+  return TIERS.length - 1;
+}
+
+function pickTwo() {
+  const tier = currentTier();
+  const pool = tier.pool();
+  // Sort pool by NET rank for gap calculation
+  const sorted = [...pool].sort((a, b) => TEAM_DATA[a].net - TEAM_DATA[b].net);
+  const maxAttempts = 200;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const iA = Math.floor(Math.random() * sorted.length);
+    const nameA = sorted[iA];
+    const rankA = TEAM_DATA[nameA].net;
+    // Find candidates with correct gap
+    const candidates = sorted.filter(n => {
+      const gap = Math.abs(TEAM_DATA[n].net - rankA);
+      return n !== nameA && gap >= tier.minGap && gap <= tier.maxGap;
+    });
+    if (candidates.length > 0) {
+      const nameB = candidates[Math.floor(Math.random() * candidates.length)];
+      return [getTeam(nameA), getTeam(nameB)];
+    }
+  }
+  // Fallback: just pick any two from pool
+  const iA = Math.floor(Math.random() * sorted.length);
+  const nameA = sorted.splice(iA, 1)[0];
+  const nameB = sorted[Math.floor(Math.random() * sorted.length)];
+  return [getTeam(nameA), getTeam(nameB)];
+}
+
+function updateProgressUI() {
+  const total = 20;
+  const pct = (questionNum / total) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('q-num').textContent = Math.min(questionNum + 1, total);
+}
+
+function redrawAll() {
+  if (!tA || !tB) return;
+  ['A','B'].forEach((s, i) => {
+    const td = i === 0 ? tA : tB;
+    const wins   = td.games.filter(g => g.w);
+    const losses = td.games.filter(g => !g.w);
+    drawRings(document.getElementById('cvW' + s), wins,   true);
+    drawRings(document.getElementById('cvL' + s), losses, false);
+  });
+}
+
+function newMatch() {
+  if (questionNum >= 20) { showSummary(); return; }
+  if (!gameStarted) return;
+  voted = false;
+  [tA, tB] = pickTwo();
+
+  updateProgressUI();
+
+  ['A','B'].forEach(s => {
+    const h = document.getElementById('h' + s);
+    h.className = 'half';
+    h.style.cursor = 'pointer';
+    document.getElementById('rv' + s).className = 'reveal';
+    document.getElementById('vh' + s).className = 'vote-hint';
+  });
+  document.getElementById('verdict').style.display = 'none';
+
+  ['A','B'].forEach((s, i) => {
+    const td = i === 0 ? tA : tB;
+    document.getElementById('rec-' + s).textContent = `${td.wins}–${td.losses}`;
+    document.getElementById('conf-' + s).textContent = 'Conference Hidden';
+    renderStats(document.getElementById('sb' + s), td);
+  });
+
+  requestAnimationFrame(() => requestAnimationFrame(redrawAll));
+}
+
+function vote(side) {
+  if (voted || questionNum >= 20) return;
+  voted = true;
+  const winner = tA.netRank < tB.netRank ? 'A' : 'B';
+  const ok = side === winner;
+  if (ok) correct++;
+  tierResults[tierIndex()].push(ok);
+  questionNum++;
+
+  document.getElementById('sc-r').textContent = correct;
+
+  ['A','B'].forEach(s => {
+    document.getElementById('h' + s).classList.add('locked');
+    document.getElementById('h' + s).style.cursor = 'default';
+    document.getElementById('vh' + s).classList.add('hidden');
+  });
+
+  document.getElementById('h' + side).classList.add(ok ? 'chosen-w' : 'chosen-l');
+  document.getElementById('h' + winner).classList.add('is-winner');
+  showReveal('A', tA, winner === 'A', side === 'A');
+  showReveal('B', tB, winner === 'B', side === 'B');
+
+  const vd = document.getElementById('verdict');
+  document.getElementById('vd-txt').textContent = ok
+    ? `✓ Correct — Team ${winner} is ranked higher`
+    : `✗ Wrong — Team ${winner} is ranked higher`;
+  document.getElementById('next-btn').textContent = questionNum >= 20 ? 'See Results' : 'Next';
+  vd.style.display = 'block';
+}
+
+function nextQuestion() {
+  if (questionNum >= 20) { showSummary(); return; }
+  newMatch();
+}
+
+function showSummary() {
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('q-num').textContent = '20';
+
+  document.getElementById('sum-correct').textContent = correct;
+
+  const pct = correct / 20;
+  let grade, msg, color;
+  if (pct === 1)        { grade = 'Perfect';      color = '#1a7a3a'; msg = 'Flawless. You should be on an independent panel that determines the tournament field.'; }
+  else if (pct >= 0.90) { grade = 'Exceptional';  color = '#2a8a4a'; msg = 'You\'re elite. The selection committee should be more like you.'; }
+  else if (pct >= 0.75) { grade = 'Strong';        color = '#3a7ab0'; msg = 'Solid read. You know your way around a résumé.'; }
+  else if (correct >= 11) { grade = 'Average';     color = '#888';    msg = 'Not bad, but some schools are definitely going to be mad at you.'; }
+  else if (correct >= 6)  { grade = 'Struggling';  color = '#c06020'; msg = 'Remember to look at both the center circle and the quad wins.'; }
+  else                  { grade = 'Rough';          color = '#c03030'; msg = 'Chin up—bracketologists have published worse.'; }
+
+  const gradeEl = document.getElementById('sum-grade');
+  gradeEl.textContent = grade;
+  gradeEl.style.color = color;
+  document.getElementById('sum-msg').textContent = msg;
+
+  // Per-tier breakdown
+  const bd = document.getElementById('sum-breakdown');
+  bd.innerHTML = TIERS.map((t, i) => {
+    const res = tierResults[i];
+    const c = res.filter(Boolean).length;
+    return `<div class="sum-tier">
+      <span class="sum-tier-label">${t.label.split(' · ')[1]}</span>
+      <span class="sum-tier-score">${c}/${res.length}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('summary').classList.add('show');
+}
+
+function buildShareText() {
+  const tierLines = TIERS.map((t, i) => {
+    const res = tierResults[i];
+    const c = res.filter(Boolean).length;
+    const dots = res.map(r => r ? '🟢' : '🔴').join('');
+    return `${t.label.split(' · ')[1]}: ${dots} ${c}/${res.length}`;
+  }).join('\n');
+  return `Blind Resume — Men's College Basketball\n${correct}/20\n\n${tierLines}\n\nhttps://objectivelydrew.github.io/blind-resume`;
+}
+
+const SITE_URL = 'https://objectivelydrew.github.io/blind-resume';
+
+// ── Draw summary card to canvas and copy as PNG image ──
+function drawSummaryImage() {
+  const DPR = 2;
+  const S = 520; // Square
+  const cv = document.createElement('canvas');
+  cv.width = S * DPR; cv.height = S * DPR;
+  const ctx = cv.getContext('2d');
+  ctx.scale(DPR, DPR);
+
+  const bg = '#ffffff', border = '#e8e4de', text = '#1a1a1a',
+        muted = '#999999', muted2 = '#bbbbbb';
+
+  // Background + border
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, S, S);
+  ctx.strokeStyle = border;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(0.5, 0.5, S - 1, S - 1);
+
+  // ── Pre-calculate wrapped message lines ──
+  ctx.font = '500 13px "Inter", sans-serif';
+  ctx.letterSpacing = '0px';
+  const msgText = document.getElementById('sum-msg').textContent;
+  const maxMsgW = S - 96;
+  const words = msgText.split(' ');
+  let line = '', lines = [];
+  for (const word of words) {
+    const test = line ? line + ' ' + word : word;
+    if (ctx.measureText(test).width > maxMsgW && line) { lines.push(line); line = word; }
+    else line = test;
+  }
+  if (line) lines.push(line);
+
+  // ── Fixed absolute positions (all baseline y values) ──
+  // Laid out from scratch so nothing overlaps
+  const yLogo     = 116;   // BLIND RESUME
+  const ySub      = 132;   // MEN'S COLLEGE BASKETBALL
+  const yScore    = 234;   // 12/20  (large gap below subtitle)
+  const yGrade    = 272;   // AVERAGE
+  const yMsg      = 306;   // message line 1
+  const yDivider  = 306 + lines.length * 18 + 20;
+  const yTiers    = yDivider + 24;
+  const yURL      = 490;   // near bottom
+
+  const gradeEl = document.getElementById('sum-grade');
+  const gradeColor = gradeEl.style.color || text;
+
+  // ── Logo ──
+  ctx.font = 'normal 28px "Bebas Neue", sans-serif';
+  ctx.letterSpacing = '3px';
+  const blindW = ctx.measureText('BLIND ').width;
+  const resumeW = ctx.measureText('RESUME').width;
+  const logoStartX = S/2 - (blindW + resumeW) / 2;
+  ctx.textAlign = 'left';
+  ctx.fillStyle = muted;
+  ctx.fillText('BLIND ', logoStartX, yLogo);
+  ctx.fillStyle = muted2;
+  ctx.fillText('RESUME', logoStartX + blindW, yLogo);
+
+  // ── Subtitle ──
+  ctx.textAlign = 'center';
+  ctx.font = '400 9px "DM Mono", monospace';
+  ctx.letterSpacing = '2px';
+  ctx.fillStyle = muted2;
+  ctx.fillText("MEN'S COLLEGE BASKETBALL", S/2, ySub);
+
+  // ── Score ──
+  ctx.font = 'normal 72px "Bebas Neue", sans-serif';
+  ctx.letterSpacing = '1px';
+  ctx.fillStyle = text;
+  ctx.textAlign = 'center';
+  ctx.fillText(`${correct}/20`, S/2, yScore);
+
+  // ── Grade ──
+  ctx.font = 'normal 22px "Bebas Neue", sans-serif';
+  ctx.letterSpacing = '2px';
+  ctx.fillStyle = gradeColor;
+  ctx.fillText(gradeEl.textContent.toUpperCase(), S/2, yGrade);
+
+  // ── Message ──
+  ctx.font = '500 13px "Inter", sans-serif';
+  ctx.letterSpacing = '0px';
+  ctx.fillStyle = muted;
+  lines.forEach((l, i) => ctx.fillText(l, S/2, yMsg + i * 18));
+
+  // ── Divider ──
+  ctx.strokeStyle = border;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(48, yDivider); ctx.lineTo(S - 48, yDivider);
+  ctx.stroke();
+
+  // ── Tier breakdown ──
+  const tierData = TIERS.map((t, i) => {
+    const res = tierResults[i];
+    const c = res.filter(Boolean).length;
+    const dots = res.map(r => r ? '●' : '○').join(' ');
+    return { label: t.label.split(' · ')[1], dots, score: `${c}/${res.length}` };
+  });
+  const colX = [72, 336];
+  const rows = [[tierData[0], tierData[2]], [tierData[1], tierData[3]]];
+  rows.forEach((row, ri) => {
+    row.forEach((td, ci) => {
+      if (!td) return;
+      const x = colX[ci], rowY = yTiers + ri * 38;
+      ctx.letterSpacing = '1px';
+      ctx.font = '500 11px "Inter", sans-serif';
+      ctx.fillStyle = text;
+      ctx.textAlign = 'left';
+      ctx.fillText(td.label, x, rowY);
+      ctx.font = '400 10px "DM Mono", monospace';
+      ctx.fillStyle = muted;
+      ctx.fillText(td.dots, x, rowY + 15);
+      ctx.font = 'normal 15px "Bebas Neue", sans-serif';
+      ctx.fillStyle = text;
+      ctx.textAlign = 'right';
+      ctx.fillText(td.score, colX[ci] + (ci === 0 ? 192 : 112), rowY);
+    });
+  });
+
+  // ── URL watermark ──
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '1px';
+  ctx.font = '300 9px "DM Mono", monospace';
+  ctx.fillStyle = muted2;
+  ctx.fillText('https://objectivelydrew.github.io/blind-resume', S/2, yURL);
+
+  return cv;
+}
+
+function shareResult(method) {
+  if (method === 'copy') {
+    const btn = document.getElementById('share-copy');
+    btn.textContent = 'Generating…';
+    btn.disabled = true;
+    // Small delay so fonts are guaranteed loaded
+    setTimeout(() => {
+      try {
+        const cv = drawSummaryImage();
+        cv.toBlob(blob => {
+          navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+            .then(() => { showCopied('Image copied!'); })
+            .catch(() => {
+              // Fallback: copy text if image clipboard not permitted
+              navigator.clipboard.writeText(buildShareText())
+                .then(() => showCopied('Text copied!'));
+            })
+            .finally(() => { btn.textContent = 'Copy Image'; btn.disabled = false; });
+        }, 'image/png');
+      } catch(e) {
+        navigator.clipboard.writeText(buildShareText())
+          .then(() => showCopied('Text copied!'));
+        btn.textContent = 'Copy Image'; btn.disabled = false;
+      }
+    }, 50);
+  } else if (method === 'bluesky') {
+    const encoded = encodeURIComponent(buildShareText());
+    window.open(`https://bsky.app/intent/compose?text=${encoded}`, '_blank');
+  }
+}
+
+function copyUrl() {
+  navigator.clipboard.writeText(SITE_URL).then(() => showCopied('URL copied!'));
+}
+
+function showCopied(msg) {
+  const el = document.getElementById('share-copied');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+function toggleHC() {
+  hcMode = !hcMode;
+  document.getElementById('hc-btn').classList.toggle('active', hcMode);
+
+  const stdColors = ['rgb(220,30,50)','rgb(230,120,0)','rgb(210,185,0)','rgb(190,190,190)'];
+  const hcColors  = ['rgb(0,114,178)','rgb(213,94,0)','rgb(0,158,115)','rgb(230,159,0)'];
+  const colors = hcMode ? hcColors : stdColors;
+
+  // Update legend swatches
+  document.querySelectorAll('.leg-swatch').forEach((s,i) => s.style.background = colors[i]);
+
+  // Update legend table Q labels
+  const tqStd = ['rgb(240,80,90)','rgb(240,150,60)','rgb(220,200,60)','rgb(190,190,190)'];
+  const tqHC  = ['rgb(60,160,230)','rgb(230,110,30)','rgb(0,190,140)','rgb(240,175,30)'];
+  document.querySelectorAll('.leg-table-q').forEach((el,i) => el.style.color = (hcMode?tqHC:tqStd)[i]);
+
+  // Update pale→vivid example rings
+  const paleRing  = document.getElementById('leg-pale-ring');
+  const vividRing = document.getElementById('leg-vivid-ring');
+  if (paleRing)  paleRing.style.background  = hcMode ? 'rgb(210,235,255)' : 'rgb(255,220,225)';
+  if (vividRing) vividRing.style.background = hcMode ? 'rgb(0,114,178)'   : 'rgb(220,30,50)';
+
+  redrawAll();
+}
+
+function restartGame() {
+  correct = 0; questionNum = 0; gameStarted = true;
+  tierResults.forEach(a => a.length = 0);
+  document.getElementById('sc-r').textContent = 0;
+  document.getElementById('summary').classList.remove('show');
+  newMatch();
+}
+
+window.addEventListener('load', async () => {
+  // Fetch live rankings (falls back to hardcoded if unavailable)
+  await initData();
+  // Pre-generate first match
+  [tA, tB] = pickTwo();
+  document.getElementById('loader').style.display = 'none';
+  document.getElementById('intro').classList.add('show');
+  const ro = new ResizeObserver(() => { if (!voted && gameStarted) redrawAll(); });
+  ro.observe(document.getElementById('arena'));
+});
+
+let gameStarted = false;
+
+function beginGame() {
+  gameStarted = true;
+  document.getElementById('intro').classList.remove('show');
+  // Render the pre-loaded match
+  updateProgressUI();
+  ['A','B'].forEach((s, i) => {
+    const td = i === 0 ? tA : tB;
+    document.getElementById('rec-' + s).textContent = `${td.wins}–${td.losses}`;
+    document.getElementById('conf-' + s).textContent = 'Conference Hidden';
+    renderStats(document.getElementById('sb' + s), td);
+  });
+  requestAnimationFrame(() => requestAnimationFrame(redrawAll));
+}
+</script>
+
+<div id="intro">
+  <div class="intro-card">
+
+    <div class="intro-header">
+      <div class="intro-logo">Blind <span>Resume</span></div>
+      <div class="intro-sub">Men's College Basketball</div>
+    </div>
+
+    <div class="intro-divider"></div>
+
+    <div class="intro-body">
+      <div class="intro-rule">
+        <div class="intro-rule-num">1</div>
+        <div class="intro-rule-text">You'll see two anonymous team résumés labeled <em>A</em> and <em>B</em>. Each circle represents one game played.</div>
+      </div>
+      <div class="intro-rule">
+        <div class="intro-rule-num">2</div>
+        <div class="intro-rule-text">Color shows the quadrant — <em style="color:rgb(220,30,50)">Q1 red</em>, <em style="color:rgb(200,100,0)">Q2 orange</em>, <em style="color:rgb(170,150,0)">Q3 yellow</em>, <em style="color:#aaa">Q4 gray</em>. Larger rings are weaker opponents. More vivid rings mean a bigger margin of victory or loss.</div>
+      </div>
+      <div class="intro-rule">
+        <div class="intro-rule-num">3</div>
+        <div class="intro-rule-text">Pick the team with the <em>higher NET ranking</em>. 20 questions. The matchups get harder as you go.</div>
+      </div>
+    </div>
+
+    <button class="intro-btn" onclick="beginGame()">Begin</button>
+
+  </div>
+  <div class="intro-footer">© 2026 ObjectivelyDrew · NET rankings data sourced Feb 26, 2026 via NCAA.com</div>
+</div>
+
+<div id="summary">
+  <div class="sum-card">
+    <div class="sum-logo">Blind <span>Resume</span></div>
+    <div class="sum-sub">Men's College Basketball</div>
+    <div class="sum-score-big"><span id="sum-correct">0</span><span class="sum-slash">/</span><span>20</span></div>
+    <div class="sum-grade" id="sum-grade"></div>
+    <div class="sum-msg" id="sum-msg"></div>
+    <div class="sum-breakdown" id="sum-breakdown"></div>
+    <div class="sum-share">
+      <div class="sum-share-label">Share your result</div>
+      <div class="sum-share-btns">
+        <button class="share-btn" id="share-copy" onclick="shareResult('copy')">Copy Image</button>
+        <button class="share-btn share-bsky" onclick="shareResult('bluesky')">Post to Bluesky</button>
+      </div>
+      <div class="sum-share-url">
+        <span class="sum-url-text" id="sum-url-text">objectivelydrew.github.io/blind-resume</span>
+        <button class="sum-url-copy" onclick="copyUrl()">Copy URL</button>
+      </div>
+      <div class="share-copied" id="share-copied"></div>
+    </div>
+    <button class="sum-btn" onclick="restartGame()">↺ Play Again</button>
+  </div>
+</div>
+<footer class="site-footer">
+  © 2026 ObjectivelyDrew · NET rankings data sourced Feb 26, 2026 via NCAA.com
+</footer>
+</body>
+</html>
