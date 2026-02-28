@@ -258,6 +258,18 @@ canvas {
   gap: 4px;
 }
 .reveal.show { display: flex; }
+.rev-logo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  margin-bottom: 10px;
+  opacity: 0.9;
+}
+.rev-logo-placeholder {
+  width: 72px;
+  height: 72px;
+  margin-bottom: 10px;
+}
 .rev-name {
   font-family: 'Bebas Neue', sans-serif;
   font-size: clamp(22px, 3vw, 46px);
@@ -926,6 +938,98 @@ canvas {
 // Replace YOUR-SUBDOMAIN with your actual Cloudflare Workers subdomain
 const WORKER_URL = 'https://blindresume-api.objectivelydrew.workers.dev';
 
+// ── ESPN Team ID lookup (for logo images) ─────────────────────────────────────
+// Logo URL: https://a.espncdn.com/i/teamlogos/ncaa/500/{id}.png
+const ESPNID = {
+  "A&M-Corpus Christi":2572,"Abilene Christian":2000,"Air Force":2005,"Akron":2006,
+  "Alabama":333,"Alabama A&M":2010,"Alabama St.":2011,"Albany":399,"Alcorn St.":2016,
+  "American":44,"App State":2026,"Arizona":12,"Arizona St.":9,"Ark.-Pine Bluff":2029,
+  "Arkansas":8,"Arkansas St.":2032,"Army West Point":349,"Auburn":2,"Austin Peay":2046,
+  "BYU":252,"Ball St.":2050,"Baylor":239,"Bellarmine":91,"Belmont":2057,
+  "Bethune-Cookman":2065,"Binghamton":2066,"Boise St.":68,"Boston College":103,
+  "Boston U.":104,"Bowling Green":189,"Bradley":71,"Brown":225,"Bryant":2803,
+  "Bucknell":2083,"Buffalo":2084,"Butler":2086,"Cal Baptist":2856,"Cal Poly":13,
+  "Cal St. Bakersfield":2463,"Cal St. Fullerton":2239,"Cal St. Northridge":2786,
+  "California":25,"Campbell":2097,"Canisius":2099,"Central Ark.":2110,
+  "Central Conn. St.":2115,"Central Mich.":2117,"Charleston":232,"Charleston So.":2127,
+  "Charlotte":2429,"Chattanooga":236,"Chicago St.":2133,"Cincinnati":2132,
+  "Clemson":228,"Cleveland St.":325,"Coastal Carolina":324,"Col. of Charleston":232,
+  "Colgate":2142,"Colorado":38,"Colorado St.":36,"Columbia":171,"Connecticut":41,
+  "Coppin St.":2154,"Cornell":172,"Creighton":156,"Dartmouth":173,"Davidson":2166,
+  "Dayton":2168,"Delaware":2169,"Delaware St.":2170,"Denver":2172,"DePaul":305,
+  "Detroit Mercy":2174,"Drake":2181,"Drexel":2182,"Duke":150,"Duquesne":2184,
+  "ETSU":2193,"East Carolina":151,"East Texas A&M":2907,"Eastern Ill.":2197,
+  "Eastern Ky.":2198,"Eastern Mich.":2199,"Eastern Wash.":331,"Elon":2210,
+  "Evansville":339,"FGCU":526,"FIU":2229,"Fairfield":2217,"Fairleigh Dickinson":2218,
+  "Fla. Atlantic":2226,"Florida":57,"Florida A&M":50,"Florida St.":52,"Fordham":2230,
+  "Fresno St.":278,"Furman":231,"Ga. Southern":290,"Gardner-Webb":2241,
+  "George Mason":2244,"George Washington":45,"Georgetown":46,"Georgia":61,
+  "Georgia St.":2247,"Georgia Tech":59,"Gonzaga":2250,"Grambling":2755,
+  "Grand Canyon":2253,"Green Bay":2710,"Hampton":2261,"Hartford":42,"Harvard":108,
+  "Hawaii":62,"High Point":2272,"Hofstra":2275,"Holy Cross":107,"Houston":248,
+  "Houston Christian":2277,"Howard":47,"IU Indy":85,"Idaho":70,"Idaho St.":304,
+  "Illinois":356,"Illinois St.":2287,"Illinois-Chicago":2646,"Incarnate Word":2916,
+  "Indiana":84,"Indiana St.":282,"Iona":314,"Iowa":2294,"Iowa St.":66,
+  "Jackson St.":2296,"Jacksonville":294,"Jacksonville St.":55,"James Madison":2297,
+  "Kansas":2305,"Kansas St.":2306,"Kennesaw St.":338,"Kent St.":2309,"Kentucky":96,
+  "LIU":2826,"LMU (CA)":2351,"LSU":99,"La Salle":2325,"Lafayette":322,"Lamar":2321,
+  "Le Moyne":2931,"Lehigh":2327,"Liberty":2335,"Lindenwood":2934,"Lipscomb":2337,
+  "Little Rock":2031,"Long Beach St.":16,"Longwood":2344,"Louisiana":309,
+  "Louisiana Tech":2348,"Louisville":97,"Loyola Chicago":2350,"Loyola Maryland":2352,
+  "Maine":311,"Manhattan":2363,"Marist":2368,"Marquette":269,"Marshall":276,
+  "Maryland":120,"Maryland-Eastern Shore":2372,"McNeese":2377,"Memphis":235,
+  "Mercer":2382,"Mercyhurst":2383,"Merrimack":2791,"Miami (FL)":2390,"Miami (OH)":193,
+  "Michigan":130,"Michigan St.":127,"Middle Tenn.":2393,"Milwaukee":270,"Minnesota":135,
+  "Mississippi St.":344,"Mississippi Val.":2400,"Missouri":142,"Missouri St.":2623,
+  "Monmouth":2405,"Montana":149,"Montana St.":2406,"Morehead St.":2413,
+  "Morgan St.":2415,"Mount St. Mary's":116,"Murray St.":2420,"NC A&T":2428,
+  "NC Central":2430,"NC State":152,"NJIT":2885,"Navy":2426,"Nebraska":158,
+  "Nevada":2440,"New Hampshire":160,"New Haven":2801,"New Mexico":167,
+  "New Mexico St.":166,"New Orleans":2443,"Niagara":315,"Nicholls":2447,
+  "Norfolk St.":2450,"North Ala.":2453,"North Carolina":153,"North Dakota":2748,
+  "North Dakota St.":2449,"North Florida":2454,"North Texas":249,"Northeastern":111,
+  "Northern Ariz.":2464,"Northern Colo.":2458,"Northern Ill.":2459,"Northern Iowa":2460,
+  "Northern Ky.":2461,"Northwestern":77,"Northwestern St.":2466,"Notre Dame":87,
+  "Oakland":2473,"Ohio":195,"Ohio St.":194,"Oklahoma":201,"Oklahoma St.":197,
+  "Old Dominion":2365,"Ole Miss":145,"Omaha":2437,"Oral Roberts":2490,"Oregon":2483,
+  "Oregon St.":204,"Pacific":279,"Penn":219,"Penn St.":213,"Pepperdine":2492,
+  "Pittsburgh":221,"Portland":2500,"Portland St.":2501,"Prairie View":2504,
+  "Presbyterian":2506,"Princeton":163,"Providence":2507,"Purdue":2509,
+  "Purdue Fort Wayne":2870,"Queens (NC)":2929,"Quinnipiac":2514,"Radford":2515,
+  "Rhode Island":227,"Rice":242,"Richmond":257,"Rider":2520,"Robert Morris":2523,
+  "Rutgers":164,"SC State":2569,"SE Missouri St.":2546,"SFA":2547,"SIUE":2565,
+  "SMU":2567,"Sacramento St.":17,"Sacred Heart":2529,"Saint Francis":2538,
+  "Saint John's":2550,"Saint Joseph's":2548,"Saint Louis":2554,"Saint Mary's":2608,
+  "Saint Peter's":2559,"Saint Thomas (MN)":2900,"Sam Houston":2534,"Samford":2535,
+  "San Diego":301,"San Diego St.":21,"San Francisco":2539,"San Jose St.":23,
+  "Santa Clara":2561,"Seattle U":2626,"Seton Hall":2564,"Siena":2563,
+  "South Alabama":6,"South Carolina":2579,"South Dakota":2582,"South Dakota St.":2581,
+  "South Florida":58,"Southeastern La.":2590,"Southern California":30,
+  "Southern Ill.":2592,"Southern Indiana":2917,"Southern Miss.":2595,
+  "Southern U.":2597,"Southern Utah":3084,"St. Bonaventure":179,"Stanford":24,
+  "Stetson":2614,"Stonehill":2935,"Stony Brook":2619,"Syracuse":183,"TCU":2628,
+  "Tarleton St.":2906,"Temple":218,"Tennessee":2633,"Tennessee St.":2634,
+  "Tennessee Tech":2635,"Texas":251,"Texas A&M":245,"Texas Southern":2640,
+  "Texas St.":326,"Texas Tech":2641,"The Citadel":2643,"Toledo":2649,"Towson":119,
+  "Troy":2653,"Tulane":2655,"Tulsa":202,"UAB":5,"UC Davis":302,"UC Irvine":300,
+  "UC Riverside":2427,"UC San Diego":2603,"UC Santa Barbara":2540,"UCF":2116,
+  "UCLA":26,"ULM":2433,"UMBC":2378,"UMES":2372,"UMKC":140,"UMass":113,
+  "UMass Lowell":2349,"UNC Asheville":2452,"UNC Greensboro":2692,"UNCW":350,
+  "UNLV":2439,"USC Upstate":2610,"UT Arlington":250,"UT Martin":2630,"UTEP":2638,
+  "UTRGV":292,"UTSA":2636,"Utah":254,"Utah St.":328,"Utah Tech":3101,
+  "Utah Valley":3108,"VCU":2670,"VMI":2714,"Valparaiso":2674,"Vanderbilt":238,
+  "Vermont":261,"Villanova":222,"Virginia":258,"Virginia Tech":259,"Wagner":2676,
+  "Wake Forest":154,"Washington":264,"Washington St.":265,"Weber St.":2685,
+  "West Georgia":2933,"West Virginia":277,"Western Caro.":2720,"Western Ill.":2795,
+  "Western Ky.":98,"Western Mich.":2725,"Wichita St.":2724,"William & Mary":2729,
+  "Winthrop":2737,"Wisconsin":275,"Wofford":2736,"Wright St.":2750,"Wyoming":2751,
+  "Xavier":2752,"Yale":43,"Youngstown St.":2755,
+};
+function logoUrl(name) {
+  const id = ESPNID[name];
+  return id ? `https://a.espncdn.com/i/teamlogos/ncaa/500/${id}.png` : null;
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // FALLBACK DATA — Source: NCAA.com NET Rankings, through Feb 26 2026
 // Used if the Worker API is unavailable
@@ -1536,7 +1640,12 @@ function showReveal(s, td, isW, wasPick) {
   else if (isW)        badge = '<div class="rev-badge bwin">⬆ Higher Rank</div>';
   else if (wasPick)    badge = '<div class="rev-badge bpl">✗ Your Pick · Lower Rank</div>';
   else                 badge = '<div class="rev-badge blose">Lower Rank</div>';
+  const url = logoUrl(td.name);
+  const logoHtml = url
+    ? `<img class="rev-logo" src="${url}" alt="${td.name}" onerror="this.style.display='none'">`
+    : `<div class="rev-logo-placeholder"></div>`;
   el.innerHTML = `
+    ${logoHtml}
     <div class="rev-name">${td.name}</div>
     <div class="rev-conf">${td.conf}</div>
     <div class="rev-rec">${td.wins}–${td.losses} · NET #${td.netRank}</div>
