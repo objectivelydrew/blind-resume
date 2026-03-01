@@ -830,6 +830,9 @@ canvas {
     background: #2a2a2a;
     display: flex;
     align-items: stretch;
+    max-height: 72px;
+    overflow: hidden;
+    flex-shrink: 0;
   }
 
   /* Scroll arrows */
@@ -961,8 +964,8 @@ canvas {
   .sum-share-btns { flex-wrap: wrap; justify-content: center; }
   .share-btn, .share-bsky { font-size: 10px; padding: 7px 14px; }
 
-  /* ── Footer ── */
-  .site-footer { font-size: 8px; padding: 5px 0 6px; }
+  /* ── Footer: hide on mobile to save space ── */
+  .site-footer { display: none; }
 }
 
 /* ═══════════════════════════════════════
