@@ -562,6 +562,19 @@ canvas {
   font-weight: 600;
   color: var(--text);
 }
+.intro-preamble, .intro-postamble {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--muted);
+  text-align: left;
+  max-width: 420px;
+}
+.intro-postamble {
+  font-style: italic;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  margin-top: 4px;
+}
 .intro-btn {
   font-family: 'DM Mono', monospace;
   font-size: 11px;
@@ -2475,20 +2488,28 @@ window.addEventListener('resize', () => {
 
     <div class="intro-divider"></div>
 
+    <div class="intro-preamble">Can you pick the best March Madness resumes? Evaluate schools by their wins and losses, without knowing their name. Choose which team you think is higher-ranked, based on:</div>
+
     <div class="intro-body">
       <div class="intro-rule">
         <div class="intro-rule-num">1</div>
-        <div class="intro-rule-text">You'll see two anonymous team résumés labeled <em>A</em> and <em>B</em>. Each circle represents one game played.</div>
+        <div class="intro-rule-text">Each circle is one game played, separated into wins and losses. The size of the circle represents the opponent's rank (1 through 365 — <em>Smaller is better!</em>)</div>
       </div>
       <div class="intro-rule">
         <div class="intro-rule-num">2</div>
-        <div class="intro-rule-text">Color shows the quadrant — <em style="color:rgb(220,30,50)">Q1 red</em>, <em style="color:rgb(200,100,0)">Q2 orange</em>, <em style="color:rgb(170,150,0)">Q3 yellow</em>, <em style="color:#aaa">Q4 gray</em>. Larger rings are weaker opponents. More vivid rings mean a bigger margin of victory or loss.</div>
+        <div class="intro-rule-text">Color shows the quadrant of the game — <em style="color:rgb(220,30,50)">Q1 red</em>, <em style="color:rgb(200,100,0)">Q2 orange</em>, <em style="color:rgb(170,150,0)">Q3 yellow</em>, <em style="color:#aaa">Q4 gray</em>.</div>
       </div>
       <div class="intro-rule">
         <div class="intro-rule-num">3</div>
-        <div class="intro-rule-text">Pick the team with the <em>higher NET ranking</em>. 20 questions. The matchups get harder as you go.</div>
+        <div class="intro-rule-text">A lightly tinted circle means a close game and more vivid ones are blowouts (<em>Vivid wins help more / losses hurt more</em>).</div>
+      </div>
+      <div class="intro-rule">
+        <div class="intro-rule-num">4</div>
+        <div class="intro-rule-text">Quad win records and average margin of victory are provided below as potential tie-breakers.</div>
       </div>
     </div>
+
+    <div class="intro-postamble">This should feel a bit confusing, just like the actual selection process. See if you're better than the Selection Sunday committee.</div>
 
     <button class="intro-btn" onclick="beginGame()">Begin</button>
 
