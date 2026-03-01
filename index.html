@@ -529,12 +529,13 @@ canvas {
   background: var(--border);
 }
 .intro-preamble {
-  font-family: 'DM Mono', monospace;
-  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
   line-height: 1.7;
   color: var(--muted);
   text-align: center;
-  letter-spacing: .02em;
+  letter-spacing: 0;
   max-width: 400px;
 }
 /* 2x2 instruction grid */
@@ -562,30 +563,29 @@ canvas {
 }
 .intro-cell-num {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 11px;
-  letter-spacing: .2em;
+  font-size: 42px;
   color: var(--border);
   line-height: 1;
 }
 .intro-cell-text {
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
   line-height: 1.65;
   color: var(--text);
-  letter-spacing: .01em;
+  letter-spacing: 0;
 }
 .intro-cell-text em {
   font-style: normal;
   font-weight: 700;
 }
 .intro-postamble {
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
   line-height: 1.7;
   color: var(--muted);
   text-align: center;
-  letter-spacing: .02em;
-  font-style: italic;
   max-width: 400px;
 }
 .intro-btn {
@@ -978,11 +978,12 @@ canvas {
   /* ── Intro card ── */
   .intro-card { gap: 16px; width: 94%; }
   .intro-logo { font-size: 38px; }
-  .intro-preamble { font-size: 11px; }
-  .intro-postamble { font-size: 10px; }
+  .intro-preamble { font-size: 12px; }
+  .intro-postamble { font-size: 11px; }
   .intro-cell { padding: 14px 10px 12px; gap: 7px; }
-  .intro-cell-icon { width: 36px; height: 36px; }
-  .intro-cell-text { font-size: 10px; }
+  .intro-cell-icon { width: 32px; height: 32px; }
+  .intro-cell-num { font-size: 32px; }
+  .intro-cell-text { font-size: 11px; }
   .intro-btn { font-size: 18px; padding: 14px 32px; }
 
   /* ── Summary card ── */
@@ -2515,8 +2516,8 @@ window.addEventListener('resize', () => {
           <circle cx="22" cy="22" r="13" stroke="#bbb" stroke-width="2"/>
           <circle cx="22" cy="22" r="6" fill="#333"/>
         </svg>
-        <div class="intro-cell-num">01</div>
-        <div class="intro-cell-text">Each circle is one game played, split into wins &amp; losses. <em>Smaller circle = stronger opponent.</em></div>
+        <div class="intro-cell-num">1</div>
+        <div class="intro-cell-text">Each circle is one game played, separated into wins and losses. The size of the circle represents the opponent's rank (1 through 365 — <em>Smaller is better!</em>)</div>
       </div>
 
       <div class="intro-cell">
@@ -2526,8 +2527,8 @@ window.addEventListener('resize', () => {
           <circle cx="33" cy="14" r="6" fill="rgb(170,150,0)"/>
           <circle cx="33" cy="30" r="6" fill="#bbb"/>
         </svg>
-        <div class="intro-cell-num">02</div>
-        <div class="intro-cell-text">Color = quadrant. <em style="color:rgb(220,30,50)">Q1 red</em>, <em style="color:rgb(200,100,0)">Q2 orange</em>, <em style="color:rgb(170,150,0)">Q3 yellow</em>, <em style="color:#aaa">Q4 gray</em>.</div>
+        <div class="intro-cell-num">2</div>
+        <div class="intro-cell-text">Color shows the quadrant of the game — <em style="color:rgb(220,30,50)">Q1 red</em>, <em style="color:rgb(200,100,0)">Q2 orange</em>, <em style="color:rgb(170,150,0)">Q3 yellow</em>, <em style="color:#aaa">Q4 gray</em>.</div>
       </div>
 
       <div class="intro-cell">
@@ -2537,8 +2538,8 @@ window.addEventListener('resize', () => {
           <circle cx="30" cy="22" r="10" fill="rgb(200,100,0)" stroke="rgb(180,80,0)" stroke-width="1.5"/>
           <circle cx="30" cy="22" r="5" fill="rgb(230,60,0)"/>
         </svg>
-        <div class="intro-cell-num">03</div>
-        <div class="intro-cell-text">Pale = close game. Vivid = blowout. <em>Vivid wins help · vivid losses hurt.</em></div>
+        <div class="intro-cell-num">3</div>
+        <div class="intro-cell-text">A lightly tinted circle means a close game and more vivid ones are blowouts (<em>Vivid wins help more / losses hurt more</em>).</div>
       </div>
 
       <div class="intro-cell">
@@ -2548,8 +2549,8 @@ window.addEventListener('resize', () => {
           <rect x="24" y="14" width="8" height="26" fill="#777"/>
           <rect x="34" y="8" width="6" height="32" fill="#aaa"/>
         </svg>
-        <div class="intro-cell-num">04</div>
-        <div class="intro-cell-text">Quad records &amp; avg margin of victory shown below as <em>tie-breakers.</em></div>
+        <div class="intro-cell-num">4</div>
+        <div class="intro-cell-text">Quad win records and average margin of victory are provided below as potential tie-breakers.</div>
       </div>
 
     </div>
