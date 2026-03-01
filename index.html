@@ -796,9 +796,9 @@ canvas {
    ═══════════════════════════════════════ */
 @media(max-width: 680px) {
 
-  /* Body: allow scroll instead of fixed overflow */
-  html, body { overflow: auto; height: auto; }
-  body { padding-bottom: 40px; }
+  /* Body: use dynamic viewport height to account for mobile browser chrome */
+  html, body { height: 100dvh; overflow: hidden; }
+  body { padding-bottom: 0; }
 
   /* ── Topbar: compress into 2 rows ── */
   .topbar {
