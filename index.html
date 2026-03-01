@@ -498,9 +498,9 @@ canvas {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 28px;
-  max-width: 480px;
-  width: 90%;
+  gap: 24px;
+  max-width: 520px;
+  width: 92%;
   text-align: center;
 }
 .intro-header {
@@ -528,65 +528,78 @@ canvas {
   height: 1px;
   background: var(--border);
 }
-.intro-body {
+.intro-preamble {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+  text-align: center;
+  letter-spacing: .02em;
+  max-width: 400px;
+}
+/* 2x2 instruction grid */
+.intro-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  width: 100%;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+.intro-cell {
+  background: var(--bg);
+  padding: 20px 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  width: 100%;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
 }
-.intro-rule {
-  display: flex;
-  align-items: flex-start;
-  gap: 18px;
-  text-align: left;
+.intro-cell-icon {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
 }
-.intro-rule-num {
+.intro-cell-num {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 36px;
+  font-size: 11px;
+  letter-spacing: .2em;
   color: var(--border);
   line-height: 1;
-  flex-shrink: 0;
-  width: 28px;
 }
-.intro-rule-text {
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: -.01em;
-  color: var(--text);
-  line-height: 1.65;
-  padding-top: 2px;
-}
-.intro-rule-text em {
-  font-style: normal;
-  font-weight: 600;
-  color: var(--text);
-}
-.intro-preamble, .intro-postamble {
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--muted);
-  text-align: left;
-  max-width: 420px;
-}
-.intro-postamble {
-  font-style: italic;
-  border-top: 1px solid var(--border);
-  padding-top: 14px;
-  margin-top: 4px;
-}
-.intro-btn {
+.intro-cell-text {
   font-family: 'DM Mono', monospace;
   font-size: 11px;
+  line-height: 1.65;
+  color: var(--text);
+  letter-spacing: .01em;
+}
+.intro-cell-text em {
+  font-style: normal;
+  font-weight: 700;
+}
+.intro-postamble {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+  text-align: center;
+  letter-spacing: .02em;
+  font-style: italic;
+  max-width: 400px;
+}
+.intro-btn {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
   letter-spacing: .22em;
   text-transform: uppercase;
-  padding: 14px 48px;
+  padding: 16px 64px;
   background: var(--text);
-  color: #fff;
+  color: var(--bg);
   border: none;
-  border-radius: 2px;
   cursor: pointer;
   transition: opacity .2s;
+  width: 100%;
   margin-top: 4px;
 }
 .intro-btn:hover { opacity: .8; }
@@ -963,10 +976,14 @@ canvas {
   }
 
   /* ── Intro card ── */
-  .intro-card { gap: 20px; width: 94%; }
+  .intro-card { gap: 16px; width: 94%; }
   .intro-logo { font-size: 38px; }
-  .intro-rule-text { font-size: 13px; }
-  .intro-btn { padding: 12px 32px; }
+  .intro-preamble { font-size: 11px; }
+  .intro-postamble { font-size: 10px; }
+  .intro-cell { padding: 14px 10px 12px; gap: 7px; }
+  .intro-cell-icon { width: 36px; height: 36px; }
+  .intro-cell-text { font-size: 10px; }
+  .intro-btn { font-size: 18px; padding: 14px 32px; }
 
   /* ── Summary card ── */
   .sum-card { padding: 28px 20px; width: 94%; gap: 14px; }
@@ -2490,23 +2507,51 @@ window.addEventListener('resize', () => {
 
     <div class="intro-preamble">Can you pick the best March Madness resumes? Evaluate schools by their wins and losses, without knowing their name. Choose which team you think is higher-ranked, based on:</div>
 
-    <div class="intro-body">
-      <div class="intro-rule">
-        <div class="intro-rule-num">1</div>
-        <div class="intro-rule-text">Each circle is one game played, separated into wins and losses. The size of the circle represents the opponent's rank (1 through 365 — <em>Smaller is better!</em>)</div>
+    <div class="intro-grid">
+
+      <div class="intro-cell">
+        <svg class="intro-cell-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="22" cy="22" r="20" stroke="#ccc" stroke-width="2"/>
+          <circle cx="22" cy="22" r="13" stroke="#bbb" stroke-width="2"/>
+          <circle cx="22" cy="22" r="6" fill="#333"/>
+        </svg>
+        <div class="intro-cell-num">01</div>
+        <div class="intro-cell-text">Each circle is one game played, split into wins &amp; losses. <em>Smaller circle = stronger opponent.</em></div>
       </div>
-      <div class="intro-rule">
-        <div class="intro-rule-num">2</div>
-        <div class="intro-rule-text">Color shows the quadrant of the game — <em style="color:rgb(220,30,50)">Q1 red</em>, <em style="color:rgb(200,100,0)">Q2 orange</em>, <em style="color:rgb(170,150,0)">Q3 yellow</em>, <em style="color:#aaa">Q4 gray</em>.</div>
+
+      <div class="intro-cell">
+        <svg class="intro-cell-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11" cy="22" r="8" fill="rgb(220,30,50)"/>
+          <circle cx="24" cy="22" r="8" fill="rgb(200,100,0)"/>
+          <circle cx="33" cy="14" r="6" fill="rgb(170,150,0)"/>
+          <circle cx="33" cy="30" r="6" fill="#bbb"/>
+        </svg>
+        <div class="intro-cell-num">02</div>
+        <div class="intro-cell-text">Color = quadrant. <em style="color:rgb(220,30,50)">Q1 red</em>, <em style="color:rgb(200,100,0)">Q2 orange</em>, <em style="color:rgb(170,150,0)">Q3 yellow</em>, <em style="color:#aaa">Q4 gray</em>.</div>
       </div>
-      <div class="intro-rule">
-        <div class="intro-rule-num">3</div>
-        <div class="intro-rule-text">A lightly tinted circle means a close game and more vivid ones are blowouts (<em>Vivid wins help more / losses hurt more</em>).</div>
+
+      <div class="intro-cell">
+        <svg class="intro-cell-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="14" cy="22" r="10" fill="rgba(200,100,0,0.18)" stroke="rgba(200,100,0,0.3)" stroke-width="1.5"/>
+          <circle cx="14" cy="22" r="5" fill="rgba(200,100,0,0.25)"/>
+          <circle cx="30" cy="22" r="10" fill="rgb(200,100,0)" stroke="rgb(180,80,0)" stroke-width="1.5"/>
+          <circle cx="30" cy="22" r="5" fill="rgb(230,60,0)"/>
+        </svg>
+        <div class="intro-cell-num">03</div>
+        <div class="intro-cell-text">Pale = close game. Vivid = blowout. <em>Vivid wins help · vivid losses hurt.</em></div>
       </div>
-      <div class="intro-rule">
-        <div class="intro-rule-num">4</div>
-        <div class="intro-rule-text">Quad win records and average margin of victory are provided below as potential tie-breakers.</div>
+
+      <div class="intro-cell">
+        <svg class="intro-cell-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="30" width="8" height="10" fill="#333"/>
+          <rect x="14" y="22" width="8" height="18" fill="#555"/>
+          <rect x="24" y="14" width="8" height="26" fill="#777"/>
+          <rect x="34" y="8" width="6" height="32" fill="#aaa"/>
+        </svg>
+        <div class="intro-cell-num">04</div>
+        <div class="intro-cell-text">Quad records &amp; avg margin of victory shown below as <em>tie-breakers.</em></div>
       </div>
+
     </div>
 
     <div class="intro-postamble">This should feel a bit confusing, just like the actual selection process. See if you're better than the Selection Sunday committee.</div>
