@@ -870,19 +870,20 @@ canvas {
   .leg-table { font-size: 9px; gap: 2px 8px; }
   .leg-explain { font-size: 10px; }
 
-  /* ── Arena: single column stack ── */
+  /* ── Arena: fill remaining height, single column stack ── */
   #arena {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1px auto;
-    overflow: visible;
-    flex: none;
+    grid-template-rows: 1fr 1px 1fr;
+    overflow: hidden;
+    flex: 1;
+    min-height: 0;
   }
   .gdiv { width: 100%; height: 1px; }
 
-  /* ── Each half: let canvas breathe ── */
+  /* ── Each half: fill grid row, let canvas breathe ── */
   .half {
-    min-height: 260px;
-    max-height: 46vh;
+    min-height: 0;
+    max-height: none;
     display: flex;
     flex-direction: column;
   }
@@ -968,7 +969,7 @@ canvas {
    SMALL PHONE — ≤ 400px
    ═══════════════════════════════════════ */
 @media(max-width: 400px) {
-  .half { max-height: 43vh; min-height: 230px; }
+  .half { min-height: 0; max-height: none; }
   .side-letter { font-size: 22px; }
   .record { font-size: 15px; }
   .stt-v { font-size: 14px; }
