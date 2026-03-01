@@ -830,8 +830,6 @@ canvas {
     background: #2a2a2a;
     display: flex;
     align-items: stretch;
-    max-height: 72px;
-    overflow: hidden;
     flex-shrink: 0;
   }
 
@@ -889,6 +887,7 @@ canvas {
     max-height: none;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
 
   /* ── Panel head: compact single row ── */
@@ -901,12 +900,14 @@ canvas {
   .record { font-size: 18px; }
   .conf-tag { font-size: 9px; margin-top: 1px; }
 
-  /* ── Canvas area: grows to fill space ── */
+  /* ── Canvas area: grows to fill space, clips overflow ── */
   .canvas-area {
     flex: 1;
     min-height: 0;
+    overflow: hidden;
     grid-template-columns: 1fr 1fr;
   }
+  .ccol { overflow: hidden; min-height: 0; }
   .ccol-label { font-size: 10px; letter-spacing: .14em; }
 
   /* ── Stats bar: single compact row of 4 ── */
