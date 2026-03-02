@@ -497,7 +497,7 @@ canvas {
 .intro-card {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 24px;
   max-width: 520px;
   width: 92%;
@@ -506,7 +506,7 @@ canvas {
 .intro-header {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 6px;
 }
 .intro-logo {
@@ -534,50 +534,55 @@ canvas {
   font-weight: 500;
   line-height: 1.65;
   color: #282828;
-  text-align: left;
+  text-align: center;
   max-width: 480px;
   width: 100%;
 }
-/* 4 left-justified rows */
+/* 2x2 instruction grid */
 .intro-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
   width: 100%;
+  background: var(--border);
 }
 .intro-cell {
-  display: grid;
-  grid-template-columns: 64px 48px 1fr;
-  grid-template-rows: auto;
-  align-items: center;
-  gap: 0 14px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  padding: 18px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: left;
   position: relative;
+  overflow: hidden;
 }
-.intro-cell:first-child { border-top: 1px solid var(--border); }
 .intro-cell-num {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 80px;
-  line-height: 0.9;
+  line-height: 0.85;
   pointer-events: none;
   user-select: none;
-  text-align: right;
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  opacity: 0.18;
 }
-.intro-cell:nth-child(1) .intro-cell-num { color: rgb(220,30,50); }
-.intro-cell:nth-child(2) .intro-cell-num { color: rgb(200,100,0); }
-.intro-cell:nth-child(3) .intro-cell-num { color: rgb(150,140,0); }
-.intro-cell:nth-child(4) .intro-cell-num { color: #aaa; }
+.intro-cell:nth-child(1) .intro-cell-num { color: rgb(220,30,50); opacity: 1; }
+.intro-cell:nth-child(2) .intro-cell-num { color: rgb(200,100,0); opacity: 1; }
+.intro-cell:nth-child(3) .intro-cell-num { color: rgb(150,140,0); opacity: 1; }
+.intro-cell:nth-child(4) .intro-cell-num { color: #bbb; opacity: 1; }
 .intro-cell-icon {
   width: 44px;
   height: 44px;
   flex-shrink: 0;
+  margin-top: 6px;
 }
 .intro-cell-text {
   font-family: 'Inter', sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
-  line-height: 1.6;
+  line-height: 1.65;
   color: #282828;
 }
 .intro-cell-text em {
@@ -590,7 +595,7 @@ canvas {
   font-weight: 500;
   line-height: 1.65;
   color: #282828;
-  text-align: left;
+  text-align: center;
   width: 100%;
   max-width: 480px;
 }
@@ -982,15 +987,14 @@ canvas {
   }
 
   /* ── Intro card ── */
-  .intro-card { gap: 16px; width: 94%; align-items: flex-start; }
+  .intro-card { gap: 16px; width: 94%; }
+  .intro-header { align-items: center; }
   .intro-logo { font-size: 38px; }
-  .intro-header { align-items: flex-start; }
-  .intro-divider { margin: 0; }
   .intro-preamble { font-size: 13px; }
   .intro-postamble { font-size: 13px; }
-  .intro-cell { grid-template-columns: 52px 38px 1fr; gap: 0 10px; padding: 12px 0; }
-  .intro-cell-num { font-size: 58px; }
-  .intro-cell-icon { width: 34px; height: 34px; }
+  .intro-cell { padding: 14px 12px 12px; gap: 7px; }
+  .intro-cell-num { font-size: 58px; top: 6px; right: 8px; }
+  .intro-cell-icon { width: 36px; height: 36px; }
   .intro-cell-text { font-size: 11px; }
   .intro-btn { font-size: 18px; padding: 14px 32px; }
 
