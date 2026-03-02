@@ -497,16 +497,16 @@ canvas {
 .intro-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 24px;
   max-width: 520px;
   width: 92%;
-  text-align: center;
+  text-align: left;
 }
 .intro-header {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
 }
 .intro-logo {
@@ -534,55 +534,51 @@ canvas {
   font-weight: 500;
   line-height: 1.65;
   color: #282828;
-  text-align: center;
-  max-width: 440px;
+  text-align: left;
+  max-width: 480px;
+  width: 100%;
 }
-/* 2x2 instruction grid — no strokes, open layout */
+/* 4 left-justified rows */
 .intro-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   width: 100%;
 }
 .intro-cell {
-  background: transparent;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 64px 48px 1fr;
+  grid-template-rows: auto;
   align-items: center;
-  gap: 10px;
-  text-align: center;
+  gap: 0 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
   position: relative;
 }
+.intro-cell:first-child { border-top: 1px solid var(--border); }
 .intro-cell-num {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 72px;
-  line-height: 1;
-  color: var(--border);
-  position: absolute;
-  top: -18px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 0;
+  font-size: 80px;
+  line-height: 0.9;
   pointer-events: none;
   user-select: none;
+  text-align: right;
 }
+.intro-cell:nth-child(1) .intro-cell-num { color: rgb(220,30,50); }
+.intro-cell:nth-child(2) .intro-cell-num { color: rgb(200,100,0); }
+.intro-cell:nth-child(3) .intro-cell-num { color: rgb(150,140,0); }
+.intro-cell:nth-child(4) .intro-cell-num { color: #aaa; }
 .intro-cell-icon {
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
-  position: relative;
-  z-index: 1;
-  margin-top: 36px;
 }
 .intro-cell-text {
   font-family: 'Inter', sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 400;
-  line-height: 1.65;
+  line-height: 1.6;
   color: #282828;
-  position: relative;
-  z-index: 1;
 }
 .intro-cell-text em {
   font-style: normal;
@@ -594,8 +590,9 @@ canvas {
   font-weight: 500;
   line-height: 1.65;
   color: #282828;
-  text-align: center;
-  max-width: 440px;
+  text-align: left;
+  width: 100%;
+  max-width: 480px;
 }
 .intro-btn {
   font-family: 'Bebas Neue', sans-serif;
@@ -985,13 +982,15 @@ canvas {
   }
 
   /* ── Intro card ── */
-  .intro-card { gap: 16px; width: 94%; }
+  .intro-card { gap: 16px; width: 94%; align-items: flex-start; }
   .intro-logo { font-size: 38px; }
+  .intro-header { align-items: flex-start; }
+  .intro-divider { margin: 0; }
   .intro-preamble { font-size: 13px; }
   .intro-postamble { font-size: 13px; }
-  .intro-grid { gap: 18px 14px; }
-  .intro-cell-num { font-size: 52px; top: -14px; }
-  .intro-cell-icon { width: 40px; height: 40px; margin-top: 28px; }
+  .intro-cell { grid-template-columns: 52px 38px 1fr; gap: 0 10px; padding: 12px 0; }
+  .intro-cell-num { font-size: 58px; }
+  .intro-cell-icon { width: 34px; height: 34px; }
   .intro-cell-text { font-size: 11px; }
   .intro-btn { font-size: 18px; padding: 14px 32px; }
 
@@ -2521,41 +2520,41 @@ window.addEventListener('resize', () => {
 
       <div class="intro-cell">
         <div class="intro-cell-num">1</div>
-        <svg class="intro-cell-icon" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="26" cy="26" r="24" stroke="#ccc" stroke-width="2.5"/>
-          <circle cx="26" cy="26" r="15" stroke="#bbb" stroke-width="2.5"/>
-          <circle cx="26" cy="26" r="7" fill="#333"/>
+        <svg class="intro-cell-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="22" cy="22" r="20" stroke="#ccc" stroke-width="2.5"/>
+          <circle cx="22" cy="22" r="13" stroke="#bbb" stroke-width="2.5"/>
+          <circle cx="22" cy="22" r="6" fill="#333"/>
         </svg>
         <div class="intro-cell-text">Each circle is one game played. The size of the circle represents the opponent's rank (1 through 365—<em>Smaller is better!</em>)</div>
       </div>
 
       <div class="intro-cell">
         <div class="intro-cell-num">2</div>
-        <svg class="intro-cell-icon" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="8"  cy="26" r="7"  fill="rgb(220,30,50)"/>
-          <circle cx="22" cy="26" r="9"  fill="rgb(200,100,0)"/>
-          <circle cx="37" cy="26" r="8"  fill="rgb(170,150,0)"/>
-          <circle cx="49" cy="26" r="5"  fill="#bbb"/>
+        <svg class="intro-cell-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="9"  fill="rgb(220,30,50)"/>
+          <circle cx="32" cy="12" r="9"  fill="rgb(200,100,0)"/>
+          <circle cx="12" cy="32" r="9"  fill="rgb(170,150,0)"/>
+          <circle cx="32" cy="32" r="9"  fill="#bbb"/>
         </svg>
         <div class="intro-cell-text">Color shows the quadrant of the game. <em style="color:rgb(220,30,50)">Q1 red</em>, <em style="color:rgb(200,100,0)">Q2 orange</em>, <em style="color:rgb(170,150,0)">Q3 yellow</em>, <em style="color:#aaa">Q4 gray</em>.</div>
       </div>
 
       <div class="intro-cell">
         <div class="intro-cell-num">3</div>
-        <svg class="intro-cell-icon" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="14" cy="26" r="12" fill="rgba(200,100,0,0.15)" stroke="rgba(200,100,0,0.25)" stroke-width="1.5"/>
-          <circle cx="14" cy="26" r="6"  fill="rgba(200,100,0,0.2)"/>
-          <circle cx="38" cy="26" r="12" fill="rgb(200,100,0)"/>
-          <circle cx="38" cy="26" r="6"  fill="rgb(230,55,0)"/>
+        <svg class="intro-cell-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="13" cy="22" r="11" fill="rgba(150,140,0,0.15)" stroke="rgba(150,140,0,0.3)" stroke-width="1.5"/>
+          <circle cx="13" cy="22" r="5"  fill="rgba(150,140,0,0.25)"/>
+          <circle cx="33" cy="22" r="11" fill="rgb(150,140,0)"/>
+          <circle cx="33" cy="22" r="5"  fill="rgb(100,90,0)"/>
         </svg>
         <div class="intro-cell-text">Lightly tinted circles mean close games. More vivid ones are blowouts (<em>Vivid helps wins and hurts losses</em>).</div>
       </div>
 
       <div class="intro-cell">
         <div class="intro-cell-num">4</div>
-        <svg class="intro-cell-icon" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="26" cy="26" r="23" stroke="#333" stroke-width="2.5"/>
-          <text x="26" y="34" font-family="DM Mono, monospace" font-size="22" font-weight="600" fill="#333" text-anchor="middle">i</text>
+        <svg class="intro-cell-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="22" cy="22" r="20" stroke="#aaa" stroke-width="2.5"/>
+          <text x="22" y="30" font-family="DM Mono, monospace" font-size="20" font-weight="600" fill="#aaa" text-anchor="middle">i</text>
         </svg>
         <div class="intro-cell-text">Quad win records and average margin of victory are provided below as potential tie-breakers.</div>
       </div>
