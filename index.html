@@ -254,7 +254,6 @@ canvas {
   padding: 24px;
   background: rgba(247,245,242,.95);
   z-index: 20;
-  backdrop-filter: blur(8px);
   gap: 4px;
 }
 .reveal.show { display: flex; }
@@ -626,7 +625,7 @@ canvas {
   justify-content: center;
   overflow: hidden;
 }
-#streak-overlay.show { display: flex; }
+#streak-overlay.show { display: flex; transform: translateZ(0); }
 #streak-interstitial {
   position: absolute;
   inset: 0;
@@ -701,6 +700,8 @@ canvas {
   align-items: center;
   gap: 14px;
   opacity: 0;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 @keyframes streakContentIn {
   0%   { opacity: 0; transform: translateY(40px); }
@@ -2511,8 +2512,6 @@ function beginGame() {
   document.getElementById('intro').classList.remove('show');
   // Kick off logo preload immediately in background
   setTimeout(preloadAllLogos, 0);
-  // Pre-warm streak animation engine — runs one invisible frame to trigger JIT compilation
-  setTimeout(_preWarmStreakEngine, 500);
   // Render the pre-loaded match
   updateProgressUI();
   ['A','B'].forEach((s, i) => {
