@@ -2693,15 +2693,15 @@ function triggerStreakOverlay(score) {
 
     _streakBurstEmojis(cfg.emoji, cfg.fires, arena);
 
-    // Fire all confetti immediately at animation start
-    for (let i = 0; i < cfg.confetti; i++) _streakParticles.push(_makeStreakParticle(canvas.width, canvas.height));
-    _streakRaf = requestAnimationFrame(() => _stepStreakConfetti(ctx, canvas));
-    // For higher levels, add a second wave mid-way
-    if (score >= 10) {
+    // Fire confetti in timed bursts spread across the animation duration
+    const _lvl = score <= 5 ? 1 : score <= 10 ? 2 : score <= 15 ? 3 : 4;
+    const _numBursts = Math.min(_lvl, 4);
+    const _perBurst  = Math.ceil(cfg.confetti / _numBursts);
+    for (let b = 0; b < _numBursts; b++) {
       setTimeout(() => {
-        const extra = Math.floor(cfg.confetti * 0.5);
-        for (let i = 0; i < extra; i++) _streakParticles.push(_makeStreakParticle(canvas.width, canvas.height));
-      }, cfg.dur * 0.35);
+        for (let i = 0; i < _perBurst; i++) _streakParticles.push(_makeStreakParticle(canvas.width, _lvl));
+        if (!_streakRaf) _streakRaf = requestAnimationFrame(() => _stepStreakConfetti(ctx, canvas));
+      }, b * 340);
     }
 
     setTimeout(() => {
@@ -2717,54 +2717,39 @@ function triggerStreakOverlay(score) {
   }, 220);
 }
 
-function _makeStreakParticle(W, H) {
-  // Particles spawn staggered across full canvas height (negative y = above canvas)
-  // so they fall through the entire visible area, not just the top
+function _makeStreakParticle(W, level) {
+  // Spawn just above the top — particles fall naturally through the full canvas height
   return {
     x:  Math.random() * W,
-    y: -Math.random() * H,
+    y:  -8 - Math.random() * 50,
     w:  5 + Math.random() * 6,
     h:  3 + Math.random() * 4,
     r:  Math.random() * Math.PI * 2,
-    dr: (Math.random() - 0.5) * 0.14,
-    vx: (Math.random() - 0.5) * 3,
-    vy: 1.5 + Math.random() * 3,   // downward only, no upward launch
-    color: ['#dc1e32','#e67800','#d2bc00','#aaaaaa','#444444'][Math.floor(Math.random() * 5)],
+    dr: (Math.random() - 0.5) * 0.16,
+    vx: (Math.random() - 0.5) * 2.8,
+    vy: 1.2 + Math.random() * (1 + level * 0.35),
+    color: ['rgb(220,30,50)','rgb(200,100,0)','rgb(150,140,0)','#999','#444','rgb(180,50,30)','rgb(100,90,0)'][Math.floor(Math.random() * 7)],
     alpha: 1,
-    decay: 0.006 + Math.random() * 0.004,  // fades in ~2-3s at 60fps
+    decay: 0.006 + Math.random() * 0.005,
   };
 }
 
 function _stepStreakConfetti(ctx, canvas) {
   const W = canvas.width, H = canvas.height;
   ctx.clearRect(0, 0, W, H);
-  _streakParticles = _streakParticles.filter(p => p.alpha > 0.01 && p.y < H + 20);
-
-  // Batch by color to minimize fillStyle switches — big perf win
-  const byColor = {};
+  _streakParticles = _streakParticles.filter(p => p.alpha > 0.01);
   for (const p of _streakParticles) {
     p.x += p.vx; p.y += p.vy; p.r += p.dr;
-    p.vy += 0.09;  // gravity
+    p.vy += 0.045;
     p.alpha -= p.decay;
-    if (p.alpha <= 0) continue;
-    if (!byColor[p.color]) byColor[p.color] = [];
-    byColor[p.color].push(p);
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, p.alpha);
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.r);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+    ctx.restore();
   }
-
-  // Draw all particles of each color in one pass, no save/restore per particle
-  for (const [color, particles] of Object.entries(byColor)) {
-    ctx.fillStyle = color;
-    for (const p of particles) {
-      ctx.globalAlpha = Math.max(0, p.alpha);
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.r);
-      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      ctx.restore();
-    }
-  }
-  ctx.globalAlpha = 1;
-
   if (_streakParticles.length > 0) {
     _streakRaf = requestAnimationFrame(() => _stepStreakConfetti(ctx, canvas));
   } else {
