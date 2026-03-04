@@ -615,12 +615,12 @@ canvas {
 }
 .intro-btn:hover { opacity: .8; }
 
-/* ── STREAK OVERLAY ── */
+/* ── STREAK OVERLAY — contained within #arena ── */
 #streak-overlay {
   display: none;
-  position: fixed;
+  position: absolute;
   inset: 0;
-  z-index: 500;
+  z-index: 50;
   pointer-events: none;
   align-items: center;
   justify-content: center;
@@ -1215,6 +1215,18 @@ canvas {
 </div><button class="leg-arrow leg-arrow-r" id="legArrowR" aria-hidden="true">&#8250;</button></div><!-- /legend-wrap -->
 
 <div id="arena">
+  <!-- Streak overlay — contained within arena -->
+  <div id="streak-overlay">
+    <div id="streak-interstitial"></div>
+    <canvas id="streak-confetti-canvas"></canvas>
+    <div id="streak-content">
+      <div class="streak-scoreboard">
+        <div class="streak-digit"><span id="streak-tens">0</span></div>
+        <div class="streak-digit"><span id="streak-ones">0</span></div>
+      </div>
+      <div id="streak-label">HEATING UP</div>
+    </div>
+  </div>
   <div class="half" id="hA" onclick="vote('A')">
     <div class="phead">
       <div class="side-letter">A</div>
@@ -2017,7 +2029,7 @@ const TIERS = [
 const tierResults = [[], [], [], []]; // arrays of true/false per answer
 
 // ── State ──
-let tA, tB, voted = false, correct = 0, questionNum = 0;
+let tA, tB, voted = false, correct = 0, streak = 0, questionNum = 0;
 
 function currentTier() {
   let q = 0;
@@ -2111,14 +2123,15 @@ function vote(side) {
 
   if (ok) {
     correct++;
+    streak++;
     playCorrectSound();
-    // Streak fanfares fire at 5, 10, 15, 20
-    if      (correct === 5)  { setTimeout(playStreak1, 300); setTimeout(() => triggerStreakOverlay(5),  400); }
-    else if (correct === 10) { setTimeout(playStreak2, 300); setTimeout(() => triggerStreakOverlay(10), 400); }
-    else if (correct === 15) { setTimeout(playStreak3, 300); setTimeout(() => triggerStreakOverlay(15), 400); }
-    else if (correct === 20) { setTimeout(playStreak4, 300); setTimeout(() => triggerStreakOverlay(20), 400); }
+    // Streak fanfares fire at 5, 10, 15, 20 consecutive correct
+    if      (streak === 5)  { setTimeout(playStreak1, 300); setTimeout(() => triggerStreakOverlay(5),  400); }
+    else if (streak === 10) { setTimeout(playStreak2, 300); setTimeout(() => triggerStreakOverlay(10), 400); }
+    else if (streak === 15) { setTimeout(playStreak3, 300); setTimeout(() => triggerStreakOverlay(15), 400); }
+    else if (streak === 20) { setTimeout(playStreak4, 300); setTimeout(() => triggerStreakOverlay(20), 400); }
   } else {
-    correct = 0; // reset streak on wrong answer
+    streak = 0; // reset streak only, correct total is preserved
     playWrongSound();
   }
   tierResults[tierIndex()].push(ok);
@@ -2394,7 +2407,7 @@ function toggleHC() {
 }
 
 function restartGame() {
-  correct = 0; questionNum = 0; gameStarted = true;
+  correct = 0; streak = 0; questionNum = 0; gameStarted = true;
   tierResults.forEach(a => a.length = 0);
   document.getElementById('sc-r').textContent = 0;
   document.getElementById('summary').classList.remove('show');
@@ -2602,17 +2615,24 @@ function triggerStreakOverlay(score) {
   const tens    = document.getElementById('streak-tens');
   const ones    = document.getElementById('streak-ones');
   const ctx     = canvas.getContext('2d');
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
+  const arena   = document.getElementById('arena');
+
+  // Size canvas to arena
+  canvas.width  = arena.offsetWidth;
+  canvas.height = arena.offsetHeight;
+
   label.textContent = cfg.label;
   label.style.color = cfg.color;
   tens.textContent = '0'; ones.textContent = '0';
   content.style.opacity = '0'; content.style.animation = 'none';
+
   overlay.classList.add('show');
   inter.style.opacity = '0';
   requestAnimationFrame(() => { inter.style.opacity = '1'; });
+
   setTimeout(() => {
     content.style.animation = 'streakContentIn ' + cfg.dur + 'ms cubic-bezier(.22,.68,0,1.15) forwards';
+
     const tickDur = cfg.dur * 0.48, tickStart = performance.now();
     (function tick(now) {
       const t = Math.min((now - tickStart) / tickDur, 1);
@@ -2621,7 +2641,9 @@ function triggerStreakOverlay(score) {
       ones.textContent = cur % 10;
       if (t < 1) requestAnimationFrame(tick);
     })(performance.now());
-    _streakBurstEmojis(cfg.emoji, cfg.fires);
+
+    _streakBurstEmojis(cfg.emoji, cfg.fires, arena);
+
     const bursts = score === 20 ? 4 : score === 15 ? 3 : score === 10 ? 2 : 1;
     for (let b = 0; b < bursts; b++) {
       setTimeout(() => {
@@ -2630,6 +2652,7 @@ function triggerStreakOverlay(score) {
         if (!_streakRaf) _streakRaf = requestAnimationFrame(() => _stepStreakConfetti(ctx, canvas));
       }, b * 340);
     }
+
     setTimeout(() => {
       inter.style.opacity = '0';
       setTimeout(() => {
@@ -2672,8 +2695,8 @@ function _animProp(el, duration, onTick, onDone) {
   })(performance.now());
 }
 
-function _streakBurstEmojis(emoji, count) {
-  const sw=window.innerWidth, sh=window.innerHeight, cx=sw/2, cy=sh/2;
+function _streakBurstEmojis(emoji, count, arena) {
+  const sw=arena.offsetWidth, sh=arena.offsetHeight, cx=sw/2, cy=sh/2;
   const isTrophy=(emoji==='\uD83C\uDFC6'), isSingle=(count===1);
   for (let i=0; i<count; i++) {
     const angle=Math.random()*Math.PI*2, dist=80+Math.random()*130;
@@ -2685,22 +2708,22 @@ function _streakBurstEmojis(emoji, count) {
     setTimeout(() => {
       const el=document.createElement('span');
       el.textContent=emoji;
-      el.style.cssText='position:fixed;font-size:'+size+'px;line-height:1;pointer-events:none;user-select:none;z-index:502;opacity:0;';
+      el.style.cssText='position:absolute;font-size:'+size+'px;line-height:1;pointer-events:none;user-select:none;z-index:52;opacity:0;';
       if (isTrophy) {
-        el.style.left=startX+'px'; el.style.top='0px'; document.body.appendChild(el);
+        el.style.left=startX+'px'; el.style.top='0px'; arena.appendChild(el);
         _animProp(el, dur, t => {
           el.style.transform='translate('+(swingX*Math.sin(t*Math.PI))+'px,'+(t*(sh+80))+'px) rotate('+(spin*t)+'deg)';
           el.style.opacity=t<0.8?1:(1-t)/0.2;
         }, () => el.remove());
       } else if (isSingle) {
-        el.style.left=cx+'px'; el.style.top=cy+'px'; document.body.appendChild(el);
+        el.style.left=cx+'px'; el.style.top=cy+'px'; arena.appendChild(el);
         _animProp(el, dur, t => {
           const scale=t<0.25?(t/0.25)*1.3:t<0.4?1.3-(t-0.25)/0.15*0.3:1;
-          el.style.transform='translate(-50%, calc(-50% + '+(( 1-Math.pow(1-t,3))*-170)+'px)) scale('+scale+')';
+          el.style.transform='translate(-50%, calc(-50% + '+((1-Math.pow(1-t,3))*-170)+'px)) scale('+scale+')';
           el.style.opacity=t<0.5?1:1-(t-0.5)/0.5;
         }, () => el.remove());
       } else {
-        el.style.left=cx+'px'; el.style.top=cy+'px'; document.body.appendChild(el);
+        el.style.left=cx+'px'; el.style.top=cy+'px'; arena.appendChild(el);
         _animProp(el, dur, t => {
           const e=1-Math.pow(1-t,2.5), s=t<0.2?(t/0.2)*1.2:t<0.35?1.2-(t-0.2)/0.15*0.2:1;
           el.style.transform='translate(calc(-50% + '+(dx*e)+'px), calc(-50% + '+(dy*e)+'px)) scale('+s+') rotate('+(spin*t)+'deg)';
@@ -2838,19 +2861,6 @@ window.addEventListener('resize', () => {
 <footer class="site-footer">
   © 2026 ObjectivelyDrew · NET rankings data sourced Feb 26, 2026 via NCAA.com
 </footer>
-<!-- Streak overlay -->
-<div id="streak-overlay">
-  <div id="streak-interstitial"></div>
-  <canvas id="streak-confetti-canvas"></canvas>
-  <div id="streak-emoji-layer"></div>
-  <div id="streak-content">
-    <div class="streak-scoreboard">
-      <div class="streak-digit"><span id="streak-tens">0</span></div>
-      <div class="streak-digit"><span id="streak-ones">0</span></div>
-    </div>
-    <div id="streak-label">HEATING UP</div>
-  </div>
-</div>
 
 </body>
 </html>
