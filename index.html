@@ -1792,25 +1792,26 @@ function setFooterDate(throughDate, lastUpdated) {
   document.querySelectorAll('.site-footer, .intro-footer').forEach(el => el.textContent = text);
 }
 
-// Fetch live data from Worker, fall back to _RAW if unavailable
-async function initData() {
+// Fetch live data from Worker in the background — never blocks the loader.
+// Fire-and-forget: if blocked by Brave Shields or slow to respond,
+// the game proceeds immediately with hardcoded _RAW fallback data.
+function initData() {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 3000);
-  try {
-    const res = await fetch(WORKER_URL, { signal: controller.signal });
-    clearTimeout(timer);
-    if (!res.ok) throw new Error('API error');
-    const data = await res.json();
-    if (data.teams && data.teams.length >= 100) {
-      TEAM_DATA = parseApiTeams(data.teams);
-      ALL_TEAMS = Object.keys(TEAM_DATA);
-      setFooterDate(data.throughDate);
-    }
-  } catch(e) {
-    clearTimeout(timer);
-    // Silently fall back to hardcoded _RAW data
-    console.warn('Using fallback data:', e.message);
-  }
+  fetch(WORKER_URL, { signal: controller.signal })
+    .then(res => { if (!res.ok) throw new Error('API error'); return res.json(); })
+    .then(data => {
+      clearTimeout(timer);
+      if (data.teams && data.teams.length >= 100) {
+        TEAM_DATA = parseApiTeams(data.teams);
+        ALL_TEAMS = Object.keys(TEAM_DATA);
+        setFooterDate(data.throughDate);
+      }
+    })
+    .catch(e => {
+      clearTimeout(timer);
+      console.warn('Using fallback data:', e.message);
+    });
 }
 
 // All 365 teams with conference (used for pool selection) — kept for compatibility
@@ -2435,20 +2436,11 @@ function restartGame() {
   newMatch();
 }
 
-window.addEventListener('load', async () => {
-  // Hard-stop safety net: loader always clears within 4s no matter what
-  const loaderTimeout = setTimeout(() => {
-    if (!tA) [tA, tB] = pickTwo();
-    document.getElementById('loader').style.display = 'none';
-    document.getElementById('intro').classList.add('show');
-  }, 4000);
+window.addEventListener('load', () => {
+  // Fire-and-forget: kick off Worker fetch in background, never awaited
+  initData();
 
-  // Fetch live rankings (falls back to hardcoded if unavailable)
-  await initData();
-
-  clearTimeout(loaderTimeout);
-
-  // Pre-generate first match
+  // Proceed immediately with fallback data — no waiting on the network
   [tA, tB] = pickTwo();
   document.getElementById('loader').style.display = 'none';
   document.getElementById('intro').classList.add('show');
@@ -2744,7 +2736,6 @@ function _makeStreakParticle(canvas) {
     color: ['rgb(220,30,50)','rgb(200,100,0)','rgb(150,140,0)','#999','#444'][Math.floor(Math.random()*5)],
     alpha: 1, decay: 0.004 + Math.random() * 0.004,
   };
-}
 }
 
 function _stepStreakConfetti(ctx, canvas) {
