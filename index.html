@@ -645,9 +645,9 @@ canvas {
   animation: scFall linear forwards;
 }
 @keyframes scFall {
-  0%   { opacity: 1;   transform: translateY(0px) rotate(0deg); }
+  0%   { opacity: 1;   transform: translate(0px, 0px) rotate(0deg); }
   80%  { opacity: 0.9; }
-  100% { opacity: 0;   transform: translateY(var(--sc-dy)) rotate(var(--sc-rot)); }
+  100% { opacity: 0;   transform: translate(var(--sc-dx), var(--sc-dy)) rotate(var(--sc-rot)); }
 }
 
 /* CSS emoji burst pieces */
@@ -2733,21 +2733,30 @@ function triggerStreakOverlay(score) {
   const cy  = H / 2;
   const rng = _scRng(score);
 
-  // Stamp confetti pieces
+  // Stamp confetti pieces — spray from both top corners inward
   const frag = document.createDocumentFragment();
   for (let i = 0; i < cfg.confetti; i++) {
-    const pc  = document.createElement('div');
-    const x   = Math.floor(rng() * W);
-    const dy  = Math.floor(H + 80 + rng() * 60);
-    const rot = Math.floor((rng() - 0.5) * 880);
-    const dur = Math.floor(1600 + rng() * cfg.dur * 0.6);
-    const dly = Math.floor(rng() * cfg.dur * 0.5);
-    const pw  = (5 + rng() * 7).toFixed(1);
-    const ph  = (3 + rng() * 5).toFixed(1);
-    const col = _SC_COLORS[Math.floor(rng() * _SC_COLORS.length)];
+    const pc       = document.createElement('div');
+    // Alternate pieces between left and right corner clusters
+    const fromLeft = (i % 2 === 0);
+    // Spawn within ~30% of each corner, with slight random spread
+    const xBase    = fromLeft ? rng() * W * 0.28 : W - rng() * W * 0.28;
+    const x        = Math.floor(xBase);
+    // Horizontal travel: spray inward (left corner goes right, right goes left)
+    // plus some randomness so pieces fan out naturally
+    const xTravel  = fromLeft
+      ? Math.floor(W * (0.15 + rng() * 0.55))   // left corner → sprays right
+      : Math.floor(-W * (0.15 + rng() * 0.55));  // right corner → sprays left
+    const dy       = Math.floor(H + 80 + rng() * 60);
+    const rot      = Math.floor((rng() - 0.5) * 880);
+    const dur      = Math.floor(1600 + rng() * cfg.dur * 0.6);
+    const dly      = Math.floor(rng() * cfg.dur * 0.5);
+    const pw       = (5 + rng() * 7).toFixed(1);
+    const ph       = (3 + rng() * 5).toFixed(1);
+    const col      = _SC_COLORS[Math.floor(rng() * _SC_COLORS.length)];
     pc.className = 'sc-piece';
     pc.style.cssText = 'left:'+x+'px;width:'+pw+'px;height:'+ph+'px;background:'+col
-      +';--sc-dy:'+dy+'px;--sc-rot:'+rot+'deg'
+      +';--sc-dx:'+xTravel+'px;--sc-dy:'+dy+'px;--sc-rot:'+rot+'deg'
       +';animation-duration:'+dur+'ms;animation-delay:'+dly+'ms';
     frag.appendChild(pc);
   }
@@ -2772,15 +2781,17 @@ function triggerStreakOverlay(score) {
         +';--se-dur:'+edur+'ms;--se-delay:'+edel+'ms';
     } else if (cfg.fires === 1) {
       em.className = 'se-piece single';
-      em.style.cssText = 'left:'+cx+'px;top:'+cy+'px;--se-dur:1600ms;--se-delay:0ms';
+      const ey1 = Math.floor(cy + H * 0.18); // 18% below center
+      em.style.cssText = 'left:'+cx+'px;top:'+ey1+'px;--se-dur:1600ms;--se-delay:0ms';
     } else {
       const angle = (j / cfg.fires) * Math.PI * 2 + rng() * 0.4;
       const dist  = 65 + rng() * 110;
       const edx   = Math.floor(Math.cos(angle) * dist);
       const edy   = Math.floor(Math.sin(angle) * dist);
       const edur  = Math.floor(900 + rng() * 400);
+      const ey2   = Math.floor(cy + H * 0.18); // 18% below center
       em.className = 'se-piece';
-      em.style.cssText = 'left:'+cx+'px;top:'+cy+'px'
+      em.style.cssText = 'left:'+cx+'px;top:'+ey2+'px'
         +';--se-dx:'+edx+'px;--se-dy:'+edy+'px'
         +';--se-dur:'+edur+'ms;--se-delay:'+edel+'ms';
     }
