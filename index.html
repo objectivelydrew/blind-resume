@@ -624,6 +624,7 @@ canvas {
   pointer-events: none;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 #streak-overlay.show { display: flex; }
 #streak-interstitial {
@@ -633,11 +634,60 @@ canvas {
   opacity: 0;
   transition: opacity 200ms ease;
 }
-#streak-confetti-canvas {
+#streak-confetti-canvas { display: none; }
+
+/* CSS confetti pieces */
+.sc-piece {
   position: absolute;
-  inset: 0;
-  pointer-events: none;
+  top: -10px;
+  opacity: 0;
+  border-radius: 1px;
+  will-change: transform, opacity;
+  animation: scFall linear forwards;
 }
+@keyframes scFall {
+  0%   { opacity: 1;   transform: translateY(0px) rotate(0deg); }
+  80%  { opacity: 0.9; }
+  100% { opacity: 0;   transform: translateY(var(--sc-dy)) rotate(var(--sc-rot)); }
+}
+
+/* CSS emoji burst pieces */
+.se-piece {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+  font-size: 26px;
+  line-height: 1;
+  will-change: transform, opacity;
+  animation: seBurst var(--se-dur) cubic-bezier(.22,.68,0,1.15) var(--se-delay) forwards;
+}
+@keyframes seBurst {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.3); }
+  14%  { opacity: 1; transform: translate(calc(-50% + var(--se-dx)), calc(-50% + var(--se-dy))) scale(1.15); }
+  50%  { opacity: 1; transform: translate(calc(-50% + var(--se-dx)), calc(-50% + var(--se-dy))) scale(1); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--se-dx)), calc(-50% + var(--se-dy) + 30px)) scale(0.85); }
+}
+.se-piece.single {
+  font-size: 54px;
+  animation: seSingle var(--se-dur) cubic-bezier(.22,.68,0,1.15) var(--se-delay) forwards;
+}
+@keyframes seSingle {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.4); }
+  20%  { opacity: 1; transform: translate(-50%, calc(-50% - 20px)) scale(1.25); }
+  45%  { opacity: 1; transform: translate(-50%, calc(-50% - 30px)) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, calc(-50% - 140px)) scale(0.8); }
+}
+.se-piece.trophy {
+  font-size: 34px;
+  animation: seTrophy var(--se-dur) ease-in var(--se-delay) forwards;
+}
+@keyframes seTrophy {
+  0%   { opacity: 1; transform: translateX(0px) translateY(0px) rotate(0deg); }
+  75%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(var(--se-sx)) translateY(var(--se-dy)) rotate(var(--se-rot)); }
+}
+
 #streak-emoji-layer {
   position: absolute;
   inset: 0;
@@ -1792,15 +1842,13 @@ function setFooterDate(throughDate, lastUpdated) {
   document.querySelectorAll('.site-footer, .intro-footer').forEach(el => el.textContent = text);
 }
 
-// Fetch live data from Worker in the background — never blocks the loader.
-// Fire-and-forget: if blocked by Brave Shields or slow to respond,
-// the game proceeds immediately with hardcoded _RAW fallback data.
+// Fetch live data from Worker — fire and forget, never blocks the loader.
 function initData() {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 3000);
+  const timer = setTimeout(function() { controller.abort(); }, 3000);
   fetch(WORKER_URL, { signal: controller.signal })
-    .then(res => { if (!res.ok) throw new Error('API error'); return res.json(); })
-    .then(data => {
+    .then(function(res) { if (!res.ok) throw new Error('API error'); return res.json(); })
+    .then(function(data) {
       clearTimeout(timer);
       if (data.teams && data.teams.length >= 100) {
         TEAM_DATA = parseApiTeams(data.teams);
@@ -1808,7 +1856,7 @@ function initData() {
         setFooterDate(data.throughDate);
       }
     })
-    .catch(e => {
+    .catch(function(e) {
       clearTimeout(timer);
       console.warn('Using fallback data:', e.message);
     });
@@ -2436,15 +2484,12 @@ function restartGame() {
   newMatch();
 }
 
-window.addEventListener('load', () => {
-  // Fire-and-forget: kick off Worker fetch in background, never awaited
-  initData();
-
-  // Proceed immediately with fallback data — no waiting on the network
+window.addEventListener('load', function() {
+  initData(); // fire and forget — never blocks
   [tA, tB] = pickTwo();
   document.getElementById('loader').style.display = 'none';
   document.getElementById('intro').classList.add('show');
-  const ro = new ResizeObserver(() => { if (!voted && gameStarted) redrawAll(); });
+  const ro = new ResizeObserver(function() { if (!voted && gameStarted) redrawAll(); });
   ro.observe(document.getElementById('arena'));
 });
 
@@ -2631,193 +2676,138 @@ function playStreak4() {
   playTone(2093, 'sine', t + 1.0, 1.2, 0.08, ac);
 }
 
-// ── STREAK ANIMATION ENGINE ───────────────────────────────────────────────
+// CSS-DRIVEN STREAK ANIMATION ENGINE
+// JS stamps CSS-animated DOM elements once per trigger.
+// All motion is GPU-composited. Only the digit ticker uses rAF.
 
 const STREAK_LEVELS = {
-  5:  { label: 'HEATING UP',    color: '#c07000', confetti: 40,  fires: 1,  emoji: '\uD83D\uDD25', dur: 3000 },
-  10: { label: 'UNSTOPPABLE',   color: '#c04000', confetti: 90,  fires: 6,  emoji: '\uD83D\uDD25', dur: 3200 },
-  15: { label: 'ON FIRE!',      color: '#b00000', confetti: 150, fires: 14, emoji: '\uD83D\uDD25', dur: 3400 },
-  20: { label: 'UNDEFEATED!!!', color: '#1a1a1a', confetti: 260, fires: 20, emoji: '\uD83C\uDFC6', dur: 4000 },
+  5:  { label: 'HEATING UP',    color: '#c07000', dur: 3000, confetti: 40,  fires: 1,  emoji: '\uD83D\uDD25' },
+  10: { label: 'UNSTOPPABLE',   color: '#c04000', dur: 3200, confetti: 75,  fires: 6,  emoji: '\uD83D\uDD25' },
+  15: { label: 'ON FIRE!',      color: '#b00000', dur: 3400, confetti: 115, fires: 14, emoji: '\uD83D\uDD25' },
+  20: { label: 'UNDEFEATED!!!', color: '#1a1a1a', dur: 4000, confetti: 170, fires: 20, emoji: '\uD83C\uDFC6' },
 };
 
-let _streakParticles = [], _streakRaf = null;
+const _SC_COLORS = ['#dc1e32','#e07800','#c8b800','#aaaaaa','#555555','#b43020','#7a6e00'];
+let _streakCleanupTimer = null;
 
-// Pre-warm: no-op — prewarm was previously corrupting canvas dimensions
-function _preWarmStreakEngine() {
-  // Intentionally empty: the old implementation restored canvas to 0x0
-  // which caused all particles to spawn at origin. Removed.
+function _scRng(seed) {
+  let s = (seed * 9999991) | 0;
+  return function() {
+    s = (Math.imul(s, 1664525) + 1013904223) | 0;
+    return (s >>> 0) / 0xffffffff;
+  };
+}
+
+function _clearStreakDOM() {
+  document.getElementById('streak-overlay').querySelectorAll('.sc-piece,.se-piece').forEach(function(el){ el.remove(); });
 }
 
 function triggerStreakOverlay(score) {
   const cfg = STREAK_LEVELS[score];
   if (!cfg) return;
+
   const overlay = document.getElementById('streak-overlay');
   const inter   = document.getElementById('streak-interstitial');
-  const canvas  = document.getElementById('streak-confetti-canvas');
   const content = document.getElementById('streak-content');
   const label   = document.getElementById('streak-label');
   const tens    = document.getElementById('streak-tens');
   const ones    = document.getElementById('streak-ones');
   const arena   = document.getElementById('arena');
 
-  // Cancel any leftover confetti loop from a previous streak
-  if (_streakRaf) { cancelAnimationFrame(_streakRaf); _streakRaf = null; }
-  _streakParticles = [];
+  if (_streakCleanupTimer) { clearTimeout(_streakCleanupTimer); _streakCleanupTimer = null; }
+  _clearStreakDOM();
 
   label.textContent = cfg.label;
   label.style.color = cfg.color;
-  tens.textContent = '0'; ones.textContent = '0';
-  content.style.opacity = '0'; content.style.animation = 'none';
+  tens.textContent = '0';
+  ones.textContent = '0';
+  content.style.opacity = '0';
+  content.style.animation = 'none';
 
-  // Show overlay FIRST so arena.offsetWidth/Height are valid when we read them
   overlay.classList.add('show');
   inter.style.opacity = '0';
-  requestAnimationFrame(() => { inter.style.opacity = '1'; });
+  requestAnimationFrame(function() { inter.style.opacity = '1'; });
 
-  // Size canvas AFTER overlay is visible — read from arena which is always rendered
-  const cW = arena.offsetWidth;
-  const cH = arena.offsetHeight;
-  canvas.width  = cW;
-  canvas.height = cH;
-  // Get fresh ctx after resize (resizing resets context state in some browsers)
-  const ctx = canvas.getContext('2d');
+  const W   = arena.offsetWidth  || 600;
+  const H   = arena.offsetHeight || 400;
+  const cx  = W / 2;
+  const cy  = H / 2;
+  const rng = _scRng(score);
 
-  setTimeout(() => {
-    content.style.animation = 'streakContentIn ' + cfg.dur + 'ms cubic-bezier(.22,.68,0,1.15) forwards';
+  // Stamp confetti pieces
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < cfg.confetti; i++) {
+    const pc  = document.createElement('div');
+    const x   = Math.floor(rng() * W);
+    const dy  = Math.floor(H + 80 + rng() * 60);
+    const rot = Math.floor((rng() - 0.5) * 880);
+    const dur = Math.floor(1600 + rng() * cfg.dur * 0.6);
+    const dly = Math.floor(rng() * cfg.dur * 0.5);
+    const pw  = (5 + rng() * 7).toFixed(1);
+    const ph  = (3 + rng() * 5).toFixed(1);
+    const col = _SC_COLORS[Math.floor(rng() * _SC_COLORS.length)];
+    pc.className = 'sc-piece';
+    pc.style.cssText = 'left:'+x+'px;width:'+pw+'px;height:'+ph+'px;background:'+col
+      +';--sc-dy:'+dy+'px;--sc-rot:'+rot+'deg'
+      +';animation-duration:'+dur+'ms;animation-delay:'+dly+'ms';
+    frag.appendChild(pc);
+  }
+  overlay.appendChild(frag);
 
+  // Stamp emoji pieces
+  const isTrophy = (score === 20);
+  const emoFrag  = document.createDocumentFragment();
+  for (let j = 0; j < cfg.fires; j++) {
+    const em   = document.createElement('span');
+    em.textContent = cfg.emoji;
+    const edel = isTrophy ? j * 110 : (j === 0 ? 0 : Math.floor(j * (50 + rng() * 60)));
+
+    if (isTrophy) {
+      const esx2 = Math.floor(rng() * W);
+      const esx  = Math.floor((rng() - 0.5) * W * 0.4);
+      const erot = Math.floor((rng() - 0.5) * 140);
+      const edur = Math.floor(2200 + rng() * 1200);
+      em.className = 'se-piece trophy';
+      em.style.cssText = 'left:'+esx2+'px;top:0'
+        +';--se-sx:'+esx+'px;--se-dy:'+(H+100)+'px;--se-rot:'+erot+'deg'
+        +';--se-dur:'+edur+'ms;--se-delay:'+edel+'ms';
+    } else if (cfg.fires === 1) {
+      em.className = 'se-piece single';
+      em.style.cssText = 'left:'+cx+'px;top:'+cy+'px;--se-dur:1600ms;--se-delay:0ms';
+    } else {
+      const angle = (j / cfg.fires) * Math.PI * 2 + rng() * 0.4;
+      const dist  = 65 + rng() * 110;
+      const edx   = Math.floor(Math.cos(angle) * dist);
+      const edy   = Math.floor(Math.sin(angle) * dist);
+      const edur  = Math.floor(900 + rng() * 400);
+      em.className = 'se-piece';
+      em.style.cssText = 'left:'+cx+'px;top:'+cy+'px'
+        +';--se-dx:'+edx+'px;--se-dy:'+edy+'px'
+        +';--se-dur:'+edur+'ms;--se-delay:'+edel+'ms';
+    }
+    emoFrag.appendChild(em);
+  }
+  overlay.appendChild(emoFrag);
+
+  // Scoreboard ticker — the only rAF in the whole system
+  setTimeout(function() {
+    content.style.animation = 'streakContentIn '+cfg.dur+'ms cubic-bezier(.22,.68,0,1.15) forwards';
     const tickDur = cfg.dur * 0.48, tickStart = performance.now();
     (function tick(now) {
-      const t = Math.min((now - tickStart) / tickDur, 1);
+      const t   = Math.min((now - tickStart) / tickDur, 1);
       const cur = Math.round((1 - Math.pow(1 - t, 2.2)) * score);
       tens.textContent = Math.floor(cur / 10);
       ones.textContent = cur % 10;
       if (t < 1) requestAnimationFrame(tick);
     })(performance.now());
-
-    _streakBurstEmojis(cfg.emoji, cfg.fires, arena);
-
-    // Fire confetti in timed bursts — use captured cW/cH, never re-read canvas dimensions
-    const _lvl = score <= 5 ? 1 : score <= 10 ? 2 : score <= 15 ? 3 : 4;
-    const _numBursts = Math.min(_lvl, 4);
-    const _perBurst  = Math.ceil(cfg.confetti / _numBursts);
-    for (let b = 0; b < _numBursts; b++) {
-      setTimeout(() => {
-        for (let i = 0; i < _perBurst; i++) _streakParticles.push(_makeStreakParticle(cW, _lvl));
-        if (!_streakRaf) _streakRaf = requestAnimationFrame(() => _stepStreakConfetti(ctx, canvas));
-      }, b * 340);
-    }
-
-    setTimeout(() => {
-      inter.style.opacity = '0';
-      setTimeout(() => {
-        overlay.classList.remove('show');
-        content.style.animation = 'none';
-        if (_streakRaf) { cancelAnimationFrame(_streakRaf); _streakRaf = null; }
-        _streakParticles = [];
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      }, 300);
-    }, cfg.dur - 220);
   }, 220);
-}
 
-function _makeStreakParticle(W, level) {
-  // Spawn just above the top — particles fall naturally through the full canvas height
-  return {
-    x:  Math.random() * W,
-    y:  -8 - Math.random() * 50,
-    w:  5 + Math.random() * 6,
-    h:  3 + Math.random() * 4,
-    r:  Math.random() * Math.PI * 2,
-    dr: (Math.random() - 0.5) * 0.16,
-    vx: (Math.random() - 0.5) * 2.8,
-    vy: 1.2 + Math.random() * (1 + level * 0.35),
-    color: ['rgb(220,30,50)','rgb(200,100,0)','rgb(150,140,0)','#999','#444','rgb(180,50,30)','rgb(100,90,0)'][Math.floor(Math.random() * 7)],
-    alpha: 1,
-    decay: 0.006 + Math.random() * 0.005,
-  };
-}
-
-function _stepStreakConfetti(ctx, canvas) {
-  const W = canvas.width, H = canvas.height;
-  ctx.clearRect(0, 0, W, H);
-  _streakParticles = _streakParticles.filter(p => p.alpha > 0.01);
-  for (const p of _streakParticles) {
-    p.x += p.vx; p.y += p.vy; p.r += p.dr;
-    p.vy += 0.045;
-    p.alpha -= p.decay;
-    ctx.save();
-    ctx.globalAlpha = Math.max(0, p.alpha);
-    ctx.translate(p.x, p.y);
-    ctx.rotate(p.r);
-    ctx.fillStyle = p.color;
-    ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-    ctx.restore();
-  }
-  if (_streakParticles.length > 0) {
-    _streakRaf = requestAnimationFrame(() => _stepStreakConfetti(ctx, canvas));
-  } else {
-    ctx.clearRect(0, 0, W, H);
-    _streakRaf = null;
-  }
-}
-
-// ── Single shared emoji animation loop — all emojis share one rAF ──
-let _emojiAnims = [];
-let _emojiRaf   = null;
-
-function _emojiTick(now) {
-  _emojiAnims = _emojiAnims.filter(a => {
-    const t = Math.min((now - a.start) / a.dur, 1);
-    a.onTick(t);
-    if (t >= 1) { if (a.onDone) a.onDone(); return false; }
-    return true;
-  });
-  if (_emojiAnims.length > 0) _emojiRaf = requestAnimationFrame(_emojiTick);
-  else _emojiRaf = null;
-}
-
-function _animProp(el, duration, onTick, onDone) {
-  _emojiAnims.push({ el, start: performance.now(), dur: duration, onTick, onDone });
-  if (!_emojiRaf) _emojiRaf = requestAnimationFrame(_emojiTick);
-}
-
-function _streakBurstEmojis(emoji, count, arena) {
-  const sw=arena.offsetWidth, sh=arena.offsetHeight, cx=sw/2, cy=sh/2;
-  const isTrophy=(emoji==='\uD83C\uDFC6'), isSingle=(count===1);
-  for (let i=0; i<count; i++) {
-    const angle=Math.random()*Math.PI*2, dist=80+Math.random()*130;
-    const dx=Math.cos(angle)*dist, dy=Math.sin(angle)*dist;
-    const spin=(Math.random()-0.5)*80, size=isSingle?64:isTrophy?36+Math.random()*16:24+Math.random()*22;
-    const startX=Math.random()*sw, swingX=(Math.random()-0.5)*60;
-    const delay=isSingle?0:i*(isTrophy?110:50+Math.random()*60);
-    const dur=isTrophy?2400+Math.random()*1200:isSingle?1600:900+Math.random()*400;
-    setTimeout(() => {
-      const el=document.createElement('span');
-      el.textContent=emoji;
-      el.style.cssText='position:absolute;font-size:'+size+'px;line-height:1;pointer-events:none;user-select:none;z-index:52;opacity:0;';
-      if (isTrophy) {
-        el.style.left=startX+'px'; el.style.top='0px'; arena.appendChild(el);
-        _animProp(el, dur, t => {
-          el.style.transform='translate('+(swingX*Math.sin(t*Math.PI))+'px,'+(t*(sh+80))+'px) rotate('+(spin*t)+'deg)';
-          el.style.opacity=t<0.8?1:(1-t)/0.2;
-        }, () => el.remove());
-      } else if (isSingle) {
-        el.style.left=cx+'px'; el.style.top=cy+'px'; arena.appendChild(el);
-        _animProp(el, dur, t => {
-          const scale=t<0.25?(t/0.25)*1.3:t<0.4?1.3-(t-0.25)/0.15*0.3:1;
-          el.style.transform='translate(-50%, calc(-50% + '+((1-Math.pow(1-t,3))*-170)+'px)) scale('+scale+')';
-          el.style.opacity=t<0.5?1:1-(t-0.5)/0.5;
-        }, () => el.remove());
-      } else {
-        el.style.left=cx+'px'; el.style.top=cy+'px'; arena.appendChild(el);
-        _animProp(el, dur, t => {
-          const e=1-Math.pow(1-t,2.5), s=t<0.2?(t/0.2)*1.2:t<0.35?1.2-(t-0.2)/0.15*0.2:1;
-          el.style.transform='translate(calc(-50% + '+(dx*e)+'px), calc(-50% + '+(dy*e)+'px)) scale('+s+') rotate('+(spin*t)+'deg)';
-          el.style.opacity=t<0.5?1:1-(t-0.5)/0.5;
-        }, () => el.remove());
-      }
-    }, delay);
-  }
+  setTimeout(function() { inter.style.opacity = '0'; }, cfg.dur - 220);
+  _streakCleanupTimer = setTimeout(function() {
+    overlay.classList.remove('show');
+    content.style.animation = 'none';
+    _clearStreakDOM();
+  }, cfg.dur + 380);
 }
 
 function toggleMute() {
