@@ -2672,12 +2672,17 @@ function triggerStreakOverlay(score) {
   const label   = document.getElementById('streak-label');
   const tens    = document.getElementById('streak-tens');
   const ones    = document.getElementById('streak-ones');
-  const ctx     = canvas.getContext('2d');
   const arena   = document.getElementById('arena');
 
-  // Size canvas to arena
+  // Cancel any leftover confetti loop from a previous streak
+  if (_streakRaf) { cancelAnimationFrame(_streakRaf); _streakRaf = null; }
+  _streakParticles = [];
+
+  // Size canvas to arena FIRST, then get a fresh ctx after sizing
+  // (assigning canvas.width/height resets the context state)
   canvas.width  = arena.offsetWidth;
   canvas.height = arena.offsetHeight;
+  const ctx = canvas.getContext('2d');
 
   label.textContent = cfg.label;
   label.style.color = cfg.color;
