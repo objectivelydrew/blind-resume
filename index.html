@@ -629,7 +629,7 @@ canvas {
 #streak-interstitial {
   position: absolute;
   inset: 0;
-  background: #F6F6F6;
+  background: rgba(247, 245, 242, 0.82);
   opacity: 0;
   transition: opacity 200ms ease;
 }
@@ -2094,6 +2094,16 @@ function newMatch() {
   voted = false;
   [tA, tB] = pickTwo();
 
+  // Preload logos for this match immediately so reveal is instant
+  [tA, tB].forEach(td => {
+    const id = ESPNID[td.name];
+    if (id && !_logoCache[id]) {
+      const img = new Image();
+      img.src = `logos/${id}.png`;
+      _logoCache[id] = img;
+    }
+  });
+
   updateProgressUI();
 
   ['A','B'].forEach(s => {
@@ -2155,7 +2165,14 @@ function vote(side) {
     ? `✓ Correct — Team ${winner} is ranked higher`
     : `✗ Wrong — Team ${winner} is ranked higher`;
   document.getElementById('next-btn').textContent = questionNum >= 20 ? 'See Results' : 'Next';
-  vd.style.display = 'block';
+  // If a streak overlay is about to play, delay verdict until after it finishes
+  const streakDelay = (ok && [5,10,15,20].includes(streak)) ? (STREAK_LEVELS[streak]?.dur || 0) + 500 : 0;
+  if (streakDelay > 0) {
+    vd.style.display = 'none';
+    setTimeout(() => { vd.style.display = 'block'; }, streakDelay);
+  } else {
+    vd.style.display = 'block';
+  }
 }
 
 function nextQuestion() {
@@ -2427,9 +2444,22 @@ window.addEventListener('load', async () => {
 
 let gameStarted = false;
 
+// Preload all logos into browser cache so reveals are instant
+const _logoCache = {};
+function preloadAllLogos() {
+  Object.entries(ESPNID).forEach(([name, id]) => {
+    if (_logoCache[id]) return;
+    const img = new Image();
+    img.src = `logos/${id}.png`;
+    _logoCache[id] = img;
+  });
+}
+
 function beginGame() {
   gameStarted = true;
   document.getElementById('intro').classList.remove('show');
+  // Kick off logo preload immediately in background
+  setTimeout(preloadAllLogos, 0);
   // Render the pre-loaded match
   updateProgressUI();
   ['A','B'].forEach((s, i) => {
