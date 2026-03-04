@@ -2729,12 +2729,12 @@ function triggerStreakOverlay(score) {
 function _makeStreakParticle(canvas) {
   return {
     x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height * 0.3, // start across top 30% not above canvas
+    y: -Math.random() * canvas.height, // stagger start above canvas so particles fill full height as they fall
     w: 5 + Math.random() * 6, h: 3 + Math.random() * 4,
     r: Math.random() * Math.PI * 2, dr: (Math.random() - 0.5) * 0.16,
-    vx: (Math.random() - 0.5) * 2.8, vy: -2 - Math.random() * 2, // launch upward first
+    vx: (Math.random() - 0.5) * 2.8, vy: 2 + Math.random() * 4, // fall downward from the start
     color: ['rgb(220,30,50)','rgb(200,100,0)','rgb(150,140,0)','#999','#444'][Math.floor(Math.random()*5)],
-    alpha: 1, decay: 0.004 + Math.random() * 0.004,
+    alpha: 1, decay: 0.003 + Math.random() * 0.003,
   };
 }
 
@@ -2743,7 +2743,7 @@ function _stepStreakConfetti(ctx, canvas) {
   _streakParticles = _streakParticles.filter(p => p.alpha > 0.01 && p.y < canvas.height + 20);
   for (const p of _streakParticles) {
     p.x += p.vx; p.y += p.vy; p.r += p.dr;
-    p.vy += 0.12; // gravity — particles arc up then fall
+    p.vy += 0.08; // gentle gravity acceleration
     p.alpha -= p.decay;
     ctx.save();
     ctx.globalAlpha = Math.max(0, p.alpha);
