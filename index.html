@@ -1794,8 +1794,11 @@ function setFooterDate(throughDate, lastUpdated) {
 
 // Fetch live data from Worker, fall back to _RAW if unavailable
 async function initData() {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 3000);
   try {
-    const res = await fetch(WORKER_URL, { signal: AbortSignal.timeout(4000) });
+    const res = await fetch(WORKER_URL, { signal: controller.signal });
+    clearTimeout(timer);
     if (!res.ok) throw new Error('API error');
     const data = await res.json();
     if (data.teams && data.teams.length >= 100) {
@@ -1804,6 +1807,7 @@ async function initData() {
       setFooterDate(data.throughDate);
     }
   } catch(e) {
+    clearTimeout(timer);
     // Silently fall back to hardcoded _RAW data
     console.warn('Using fallback data:', e.message);
   }
@@ -2432,8 +2436,18 @@ function restartGame() {
 }
 
 window.addEventListener('load', async () => {
+  // Hard-stop safety net: loader always clears within 4s no matter what
+  const loaderTimeout = setTimeout(() => {
+    if (!tA) [tA, tB] = pickTwo();
+    document.getElementById('loader').style.display = 'none';
+    document.getElementById('intro').classList.add('show');
+  }, 4000);
+
   // Fetch live rankings (falls back to hardcoded if unavailable)
   await initData();
+
+  clearTimeout(loaderTimeout);
+
   // Pre-generate first match
   [tA, tB] = pickTwo();
   document.getElementById('loader').style.display = 'none';
