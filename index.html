@@ -2025,7 +2025,19 @@ function vote(side) {
   voted = true;
   const winner = tA.netRank < tB.netRank ? 'A' : 'B';
   const ok = side === winner;
-  if (ok) { correct++; playCorrectSound(correct); }
+
+  if (ok) {
+    correct++;
+    playCorrectSound();
+    // Streak fanfares fire at 5, 10, 15, 20
+    if      (correct === 5)  setTimeout(playStreak1, 300);
+    else if (correct === 10) setTimeout(playStreak2, 300);
+    else if (correct === 15) setTimeout(playStreak3, 300);
+    else if (correct === 20) setTimeout(playStreak4, 300);
+  } else {
+    correct = 0; // reset streak on wrong answer
+    playWrongSound();
+  }
   tierResults[tierIndex()].push(ok);
   questionNum++;
 
@@ -2371,105 +2383,130 @@ function beginGame() {
 //   Tier 6 (Q20):    brass2 + cheer2 simultaneously
 
 let _muted = false;
-const SOUNDS_PATH = 'sounds/';
 
-// Preload all clips into Audio objects at startup for zero-latency playback
-const _clips = {};
-const _clipDefs = {
-  snare1: 'snare1.mp3',
-  snare2: 'snare2.mp3',
-  brass1: 'brass1.mp3',
-  brass2: 'brass2.mp3',
-  cheer1: 'cheer1.mp3',
-  cheer2: 'cheer2.mp3',
-};
+// ── Web Audio Sound Engine ────────────────────────────────────────────────
+// Fully synthesized — no external files needed.
 
-// Preload on first user interaction (autoplay policy)
-let _preloaded = false;
-function preloadSounds() {
-  if (_preloaded) return;
-  _preloaded = true;
-  Object.entries(_clipDefs).forEach(([key, file]) => {
-    const audio = new Audio(SOUNDS_PATH + file);
-    audio.preload = 'auto';
-    audio.load();
-    _clips[key] = audio;
-  });
+let _ac = null;
+function getAC() {
+  if (!_ac) _ac = new (window.AudioContext || window.webkitAudioContext)();
+  if (_ac.state === 'suspended') _ac.resume();
+  return _ac;
 }
 
-// Play a clip by key, with optional delay (seconds) and volume (0-1)
-function playClip(key, delayMs = 0, vol = 1.0) {
-  const src = _clips[key];
-  if (!src) return;
-  setTimeout(() => {
-    // Clone the audio so overlapping calls don't interrupt each other
-    const clone = src.cloneNode();
-    clone.volume = Math.min(1, Math.max(0, vol));
-    clone.play().catch(() => {}); // swallow autoplay errors silently
-  }, delayMs);
+function playTone(freq, type, startTime, duration, vol, ac, dest) {
+  const osc  = ac.createOscillator();
+  const gain = ac.createGain();
+  osc.connect(gain);
+  gain.connect(dest || ac.destination);
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, startTime);
+  gain.gain.setValueAtTime(0, startTime);
+  gain.gain.linearRampToValueAtTime(vol, startTime + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+  osc.start(startTime);
+  osc.stop(startTime + duration + 0.05);
 }
 
-// ---- TIER FUNCTIONS ----
-
-function playTier1(v) {
-  // Simple snare hit — escalates across 3 variations
-  const vols = [0.7, 0.8, 0.9];
-  playClip('snare1', 0, vols[v]);
+function playNoise(startTime, duration, vol, ac) {
+  const bufSize = ac.sampleRate * duration;
+  const buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+  const src  = ac.createBufferSource();
+  const gain = ac.createGain();
+  const filt = ac.createBiquadFilter();
+  src.buffer = buf;
+  filt.type = 'bandpass';
+  filt.frequency.value = 2000;
+  filt.Q.value = 0.5;
+  src.connect(filt);
+  filt.connect(gain);
+  gain.connect(ac.destination);
+  gain.gain.setValueAtTime(vol, startTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+  src.start(startTime);
 }
 
-function playTier2(v) {
-  // Slightly longer snare — feels like a 2-hit cadence
-  playClip('snare2', 0, 0.85);
-  // On v=2, add a second hit with slight delay for extra punch
-  if (v === 2) playClip('snare1', 350, 0.6);
-}
-
-function playTier3(v) {
-  // Snare leads, brass stab arrives slightly after — like a real cadence-to-hit
-  const snareClip = v < 2 ? 'snare1' : 'snare2';
-  playClip(snareClip, 0, 0.85);
-  // Brass enters 200-350ms later depending on variation
-  const brassDelays = [250, 200, 300];
-  playClip('brass1', brassDelays[v], 0.8);
-}
-
-function playTier4(v) {
-  // Snare + bigger brass hit — still staggered but tighter
-  playClip('snare2', 0, 0.9);
-  const brassDelays = [150, 100, 200];
-  playClip('brass2', brassDelays[v], 0.85);
-}
-
-function playTier5(v) {
-  // Brass leads, crowd erupts just after — the brass triggers the cheer
-  playClip('brass2', 0, 0.9);
-  const cheerDelays = [500, 400, 600];
-  playClip('cheer1', cheerDelays[v], 0.75);
-}
-
-function playTier6() {
-  // Full fanfare: brass + roaring crowd fire simultaneously
-  playClip('brass2', 0, 1.0);
-  playClip('cheer2', 0, 0.9);
-  // Optional: add a snare cadence just before the brass hits for that fight-song intro feel
-  playClip('snare2', 0, 0.7);
-}
-
-// ---- Main dispatcher ----
-function playCorrectSound(correctCount) {
+// ── CORRECT answer chime ──────────────────────────────────────────────────
+function playCorrectSound() {
   if (_muted) return;
-  preloadSounds(); // ensures preload on first correct answer
-  const v = (correctCount - 1) % 3;
-  try {
-    if      (correctCount <= 3)  playTier1(v);
-    else if (correctCount <= 6)  playTier2(v);
-    else if (correctCount <= 10) playTier3(v);
-    else if (correctCount <= 15) playTier4(v);
-    else if (correctCount <= 19) playTier5(v);
-    else                          playTier6();
-  } catch(e) {
-    console.warn('Audio error:', e);
-  }
+  const ac = getAC();
+  const t  = ac.currentTime;
+  // Rising two-note chime: C5 → E5
+  playTone(523.25, 'sine', t,        0.35, 0.35, ac);
+  playTone(659.25, 'sine', t + 0.12, 0.45, 0.35, ac);
+  // Soft shimmer overtone
+  playTone(1046.5, 'sine', t + 0.1,  0.3,  0.1,  ac);
+}
+
+// ── WRONG answer buzzer ───────────────────────────────────────────────────
+function playWrongSound() {
+  if (_muted) return;
+  const ac = getAC();
+  const t  = ac.currentTime;
+  // Descending buzz: two sawtooth tones dropping in pitch
+  playTone(220, 'sawtooth', t,        0.25, 0.25, ac);
+  playTone(180, 'sawtooth', t + 0.08, 0.3,  0.2,  ac);
+  // Low thud
+  playTone(80,  'sine',     t,        0.2,  0.3,  ac);
+}
+
+// ── STREAK fanfares ───────────────────────────────────────────────────────
+// Level 1 (5 correct): "HEATING UP" — single bright trumpet stab
+function playStreak1() {
+  if (_muted) return;
+  const ac = getAC();
+  const t  = ac.currentTime;
+  playTone(523.25, 'square', t,        0.15, 0.2, ac);
+  playTone(659.25, 'square', t + 0.1,  0.2,  0.2, ac);
+  playTone(783.99, 'square', t + 0.22, 0.35, 0.2, ac);
+}
+
+// Level 2 (10 correct): "UNSTOPPABLE" — brighter ascending fanfare
+function playStreak2() {
+  if (_muted) return;
+  const ac = getAC();
+  const t  = ac.currentTime;
+  // Snare-like noise burst
+  playNoise(t, 0.1, 0.3, ac);
+  // Trumpet run up
+  const notes = [523.25, 587.33, 659.25, 783.99];
+  notes.forEach((f, i) => playTone(f, 'square', t + i * 0.09, 0.25, 0.22, ac));
+  // Final chord hit
+  [523.25, 659.25, 783.99].forEach(f => playTone(f, 'square', t + 0.42, 0.5, 0.18, ac));
+}
+
+// Level 3 (15 correct): "ON FIRE!" — full brass fanfare with snare
+function playStreak3() {
+  if (_muted) return;
+  const ac = getAC();
+  const t  = ac.currentTime;
+  // Snare roll
+  [0, 0.06, 0.12, 0.18].forEach(d => playNoise(t + d, 0.08, 0.3, ac));
+  // Brass melody: C-E-G-C
+  const mel = [523.25, 659.25, 783.99, 1046.5];
+  mel.forEach((f, i) => playTone(f, 'sawtooth', t + 0.22 + i * 0.1, 0.3, 0.18, ac));
+  // Big chord landing
+  [523.25, 659.25, 783.99, 1046.5].forEach(f =>
+    playTone(f, 'sawtooth', t + 0.65, 0.7, 0.15, ac));
+}
+
+// Level 4 (20 correct): "UNDEFEATED!!!" — full orchestral swell
+function playStreak4() {
+  if (_muted) return;
+  const ac = getAC();
+  const t  = ac.currentTime;
+  // Snare roll build
+  for (let i = 0; i < 8; i++) playNoise(t + i * 0.045, 0.07, 0.25 + i * 0.03, ac);
+  // Brass fanfare run
+  const run = [392, 440, 523.25, 587.33, 659.25, 783.99, 880, 1046.5];
+  run.forEach((f, i) => playTone(f, 'sawtooth', t + 0.3 + i * 0.07, 0.25, 0.16, ac));
+  // Massive final chord: C major full voicing
+  [130.81, 261.63, 523.25, 659.25, 783.99, 1046.5].forEach(f =>
+    playTone(f, 'sawtooth', t + 0.9, 1.2, 0.14, ac));
+  // Shimmer on top
+  playTone(2093, 'sine', t + 0.9, 1.0, 0.08, ac);
 }
 
 function toggleMute() {
