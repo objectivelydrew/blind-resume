@@ -2664,20 +2664,23 @@ function triggerStreakOverlay(score) {
   if (_streakRaf) { cancelAnimationFrame(_streakRaf); _streakRaf = null; }
   _streakParticles = [];
 
-  // Size canvas to arena FIRST, then get a fresh ctx after sizing
-  // (assigning canvas.width/height resets the context state)
-  canvas.width  = arena.offsetWidth;
-  canvas.height = arena.offsetHeight;
-  const ctx = canvas.getContext('2d');
-
   label.textContent = cfg.label;
   label.style.color = cfg.color;
   tens.textContent = '0'; ones.textContent = '0';
   content.style.opacity = '0'; content.style.animation = 'none';
 
+  // Show overlay FIRST so arena.offsetWidth/Height are valid when we read them
   overlay.classList.add('show');
   inter.style.opacity = '0';
   requestAnimationFrame(() => { inter.style.opacity = '1'; });
+
+  // Size canvas AFTER overlay is visible — read from arena which is always rendered
+  const cW = arena.offsetWidth;
+  const cH = arena.offsetHeight;
+  canvas.width  = cW;
+  canvas.height = cH;
+  // Get fresh ctx after resize (resizing resets context state in some browsers)
+  const ctx = canvas.getContext('2d');
 
   setTimeout(() => {
     content.style.animation = 'streakContentIn ' + cfg.dur + 'ms cubic-bezier(.22,.68,0,1.15) forwards';
@@ -2693,13 +2696,13 @@ function triggerStreakOverlay(score) {
 
     _streakBurstEmojis(cfg.emoji, cfg.fires, arena);
 
-    // Fire confetti in timed bursts spread across the animation duration
+    // Fire confetti in timed bursts — use captured cW/cH, never re-read canvas dimensions
     const _lvl = score <= 5 ? 1 : score <= 10 ? 2 : score <= 15 ? 3 : 4;
     const _numBursts = Math.min(_lvl, 4);
     const _perBurst  = Math.ceil(cfg.confetti / _numBursts);
     for (let b = 0; b < _numBursts; b++) {
       setTimeout(() => {
-        for (let i = 0; i < _perBurst; i++) _streakParticles.push(_makeStreakParticle(canvas.width, _lvl));
+        for (let i = 0; i < _perBurst; i++) _streakParticles.push(_makeStreakParticle(cW, _lvl));
         if (!_streakRaf) _streakRaf = requestAnimationFrame(() => _stepStreakConfetti(ctx, canvas));
       }, b * 340);
     }
@@ -2758,14 +2761,24 @@ function _stepStreakConfetti(ctx, canvas) {
   }
 }
 
+// ── Single shared emoji animation loop — all emojis share one rAF ──
+let _emojiAnims = [];
+let _emojiRaf   = null;
+
+function _emojiTick(now) {
+  _emojiAnims = _emojiAnims.filter(a => {
+    const t = Math.min((now - a.start) / a.dur, 1);
+    a.onTick(t);
+    if (t >= 1) { if (a.onDone) a.onDone(); return false; }
+    return true;
+  });
+  if (_emojiAnims.length > 0) _emojiRaf = requestAnimationFrame(_emojiTick);
+  else _emojiRaf = null;
+}
+
 function _animProp(el, duration, onTick, onDone) {
-  const start = performance.now();
-  (function frame(now) {
-    const t = Math.min((now - start) / duration, 1);
-    onTick(t);
-    if (t < 1) requestAnimationFrame(frame);
-    else if (onDone) onDone();
-  })(performance.now());
+  _emojiAnims.push({ el, start: performance.now(), dur: duration, onTick, onDone });
+  if (!_emojiRaf) _emojiRaf = requestAnimationFrame(_emojiTick);
 }
 
 function _streakBurstEmojis(emoji, count, arena) {
