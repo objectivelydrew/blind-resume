@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Blind Resume · D1 Men's Basketball 2025-26</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Bebas+Neue&family=Inter:wght@400;500;600&family=Share+Tech+Mono&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
 
 :root {
@@ -614,6 +614,89 @@ canvas {
   margin-top: 4px;
 }
 .intro-btn:hover { opacity: .8; }
+
+/* ── STREAK OVERLAY ── */
+#streak-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  pointer-events: none;
+  align-items: center;
+  justify-content: center;
+}
+#streak-overlay.show { display: flex; }
+#streak-interstitial {
+  position: absolute;
+  inset: 0;
+  background: #F6F6F6;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+#streak-confetti-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+#streak-emoji-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+#streak-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  opacity: 0;
+}
+@keyframes streakContentIn {
+  0%   { opacity: 0; transform: translateY(40px); }
+  18%  { opacity: 1; transform: translateY(0); }
+  70%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-60px); }
+}
+.streak-scoreboard {
+  display: flex;
+  gap: 8px;
+}
+.streak-digit {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 88px;
+  line-height: 1;
+  color: #e8001e;
+  width: 72px;
+  text-align: center;
+  position: relative;
+  background: #282828;
+  padding: 10px 8px 8px;
+  border-radius: 2px;
+  text-shadow: 0 0 10px rgba(232,0,30,0.55), 0 0 30px rgba(232,0,30,0.2);
+}
+.streak-digit::before {
+  content: '8';
+  position: absolute;
+  inset: 0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 88px;
+  line-height: 1;
+  padding-top: 10px;
+  color: #3d1212;
+  z-index: 0;
+  text-align: center;
+}
+.streak-digit span { position: relative; z-index: 1; }
+#streak-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 56px;
+  letter-spacing: .1em;
+  line-height: 1;
+  color: var(--text);
+  text-align: center;
+  white-space: nowrap;
+}
 
 /* ── SUMMARY SCREEN ── */
 #summary {
@@ -2030,10 +2113,10 @@ function vote(side) {
     correct++;
     playCorrectSound();
     // Streak fanfares fire at 5, 10, 15, 20
-    if      (correct === 5)  setTimeout(playStreak1, 300);
-    else if (correct === 10) setTimeout(playStreak2, 300);
-    else if (correct === 15) setTimeout(playStreak3, 300);
-    else if (correct === 20) setTimeout(playStreak4, 300);
+    if      (correct === 5)  { setTimeout(playStreak1, 300); setTimeout(() => triggerStreakOverlay(5),  400); }
+    else if (correct === 10) { setTimeout(playStreak2, 300); setTimeout(() => triggerStreakOverlay(10), 400); }
+    else if (correct === 15) { setTimeout(playStreak3, 300); setTimeout(() => triggerStreakOverlay(15), 400); }
+    else if (correct === 20) { setTimeout(playStreak4, 300); setTimeout(() => triggerStreakOverlay(20), 400); }
   } else {
     correct = 0; // reset streak on wrong answer
     playWrongSound();
@@ -2452,61 +2535,180 @@ function playWrongSound() {
   playTone(80,  'sine',     t,        0.2,  0.3,  ac);
 }
 
-// ── STREAK fanfares ───────────────────────────────────────────────────────
-// Level 1 (5 correct): "HEATING UP" — single bright trumpet stab
+// ── STREAK fanfares — brass timbre via sawtooth + detuned harmonics ──────
+
+function playBrass(freq, startTime, duration, vol, ac) {
+  playTone(freq,         'sawtooth', startTime, duration, vol * 0.5, ac);
+  playTone(freq * 1.004, 'sawtooth', startTime, duration, vol * 0.4, ac);
+  playTone(freq * 2,     'sawtooth', startTime, duration, vol * 0.12, ac);
+}
+
 function playStreak1() {
   if (_muted) return;
-  const ac = getAC();
-  const t  = ac.currentTime;
-  playTone(523.25, 'square', t,        0.15, 0.2, ac);
-  playTone(659.25, 'square', t + 0.1,  0.2,  0.2, ac);
-  playTone(783.99, 'square', t + 0.22, 0.35, 0.2, ac);
+  const ac = getAC(), t = ac.currentTime;
+  playBrass(523.25, t,       0.22, 0.35, ac);
+  playBrass(659.25, t + 0.2, 0.22, 0.35, ac);
+  playBrass(783.99, t + 0.4, 0.5,  0.42, ac);
 }
 
-// Level 2 (10 correct): "UNSTOPPABLE" — brighter ascending fanfare
 function playStreak2() {
   if (_muted) return;
-  const ac = getAC();
-  const t  = ac.currentTime;
-  // Snare-like noise burst
-  playNoise(t, 0.1, 0.3, ac);
-  // Trumpet run up
-  const notes = [523.25, 587.33, 659.25, 783.99];
-  notes.forEach((f, i) => playTone(f, 'square', t + i * 0.09, 0.25, 0.22, ac));
-  // Final chord hit
-  [523.25, 659.25, 783.99].forEach(f => playTone(f, 'square', t + 0.42, 0.5, 0.18, ac));
+  const ac = getAC(), t = ac.currentTime;
+  playNoise(t, 0.12, 0.25, ac);
+  [523.25, 587.33, 659.25, 783.99].forEach((f, i) =>
+    playBrass(f, t + 0.15 + i * 0.1, 0.22, 0.32, ac));
+  [523.25, 659.25, 783.99].forEach(f => playBrass(f, t + 0.62, 0.7, 0.28, ac));
 }
 
-// Level 3 (15 correct): "ON FIRE!" — full brass fanfare with snare
 function playStreak3() {
   if (_muted) return;
-  const ac = getAC();
-  const t  = ac.currentTime;
-  // Snare roll
-  [0, 0.06, 0.12, 0.18].forEach(d => playNoise(t + d, 0.08, 0.3, ac));
-  // Brass melody: C-E-G-C
-  const mel = [523.25, 659.25, 783.99, 1046.5];
-  mel.forEach((f, i) => playTone(f, 'sawtooth', t + 0.22 + i * 0.1, 0.3, 0.18, ac));
-  // Big chord landing
-  [523.25, 659.25, 783.99, 1046.5].forEach(f =>
-    playTone(f, 'sawtooth', t + 0.65, 0.7, 0.15, ac));
+  const ac = getAC(), t = ac.currentTime;
+  [0, 0.055, 0.11, 0.165, 0.22].forEach(d => playNoise(t + d, 0.07, 0.28, ac));
+  [392, 523.25, 587.33, 659.25, 783.99, 880].forEach((f, i) =>
+    playBrass(f, t + 0.28 + i * 0.09, 0.22, 0.28, ac));
+  [523.25, 659.25, 783.99, 1046.5].forEach(f => playBrass(f, t + 0.86, 0.9, 0.24, ac));
 }
 
-// Level 4 (20 correct): "UNDEFEATED!!!" — full orchestral swell
 function playStreak4() {
   if (_muted) return;
-  const ac = getAC();
-  const t  = ac.currentTime;
-  // Snare roll build
-  for (let i = 0; i < 8; i++) playNoise(t + i * 0.045, 0.07, 0.25 + i * 0.03, ac);
-  // Brass fanfare run
-  const run = [392, 440, 523.25, 587.33, 659.25, 783.99, 880, 1046.5];
-  run.forEach((f, i) => playTone(f, 'sawtooth', t + 0.3 + i * 0.07, 0.25, 0.16, ac));
-  // Massive final chord: C major full voicing
+  const ac = getAC(), t = ac.currentTime;
+  for (let i = 0; i < 8; i++) playNoise(t + i * 0.04, 0.065, 0.22 + i * 0.03, ac);
+  [261.63, 329.63, 392, 523.25, 587.33, 659.25, 783.99, 880, 1046.5].forEach((f, i) =>
+    playBrass(f, t + 0.3 + i * 0.07, 0.25, 0.22, ac));
   [130.81, 261.63, 523.25, 659.25, 783.99, 1046.5].forEach(f =>
-    playTone(f, 'sawtooth', t + 0.9, 1.2, 0.14, ac));
-  // Shimmer on top
-  playTone(2093, 'sine', t + 0.9, 1.0, 0.08, ac);
+    playBrass(f, t + 1.0, 1.4, 0.2, ac));
+  playTone(2093, 'sine', t + 1.0, 1.2, 0.08, ac);
+}
+
+// ── STREAK ANIMATION ENGINE ───────────────────────────────────────────────
+
+const STREAK_LEVELS = {
+  5:  { label: 'HEATING UP',    color: '#c07000', confetti: 40,  fires: 1,  emoji: '\uD83D\uDD25', dur: 3000 },
+  10: { label: 'UNSTOPPABLE',   color: '#c04000', confetti: 90,  fires: 6,  emoji: '\uD83D\uDD25', dur: 3200 },
+  15: { label: 'ON FIRE!',      color: '#b00000', confetti: 150, fires: 14, emoji: '\uD83D\uDD25', dur: 3400 },
+  20: { label: 'UNDEFEATED!!!', color: '#1a1a1a', confetti: 260, fires: 20, emoji: '\uD83C\uDFC6', dur: 4000 },
+};
+
+let _streakParticles = [], _streakRaf = null;
+
+function triggerStreakOverlay(score) {
+  const cfg = STREAK_LEVELS[score];
+  if (!cfg) return;
+  const overlay = document.getElementById('streak-overlay');
+  const inter   = document.getElementById('streak-interstitial');
+  const canvas  = document.getElementById('streak-confetti-canvas');
+  const content = document.getElementById('streak-content');
+  const label   = document.getElementById('streak-label');
+  const tens    = document.getElementById('streak-tens');
+  const ones    = document.getElementById('streak-ones');
+  const ctx     = canvas.getContext('2d');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  label.textContent = cfg.label;
+  label.style.color = cfg.color;
+  tens.textContent = '0'; ones.textContent = '0';
+  content.style.opacity = '0'; content.style.animation = 'none';
+  overlay.classList.add('show');
+  inter.style.opacity = '0';
+  requestAnimationFrame(() => { inter.style.opacity = '1'; });
+  setTimeout(() => {
+    content.style.animation = 'streakContentIn ' + cfg.dur + 'ms cubic-bezier(.22,.68,0,1.15) forwards';
+    const tickDur = cfg.dur * 0.48, tickStart = performance.now();
+    (function tick(now) {
+      const t = Math.min((now - tickStart) / tickDur, 1);
+      const cur = Math.round((1 - Math.pow(1 - t, 2.2)) * score);
+      tens.textContent = Math.floor(cur / 10);
+      ones.textContent = cur % 10;
+      if (t < 1) requestAnimationFrame(tick);
+    })(performance.now());
+    _streakBurstEmojis(cfg.emoji, cfg.fires);
+    const bursts = score === 20 ? 4 : score === 15 ? 3 : score === 10 ? 2 : 1;
+    for (let b = 0; b < bursts; b++) {
+      setTimeout(() => {
+        const n = Math.ceil(cfg.confetti / bursts);
+        for (let i = 0; i < n; i++) _streakParticles.push(_makeStreakParticle(canvas));
+        if (!_streakRaf) _streakRaf = requestAnimationFrame(() => _stepStreakConfetti(ctx, canvas));
+      }, b * 340);
+    }
+    setTimeout(() => {
+      inter.style.opacity = '0';
+      setTimeout(() => {
+        overlay.classList.remove('show');
+        content.style.animation = 'none';
+        if (_streakRaf) { cancelAnimationFrame(_streakRaf); _streakRaf = null; }
+        _streakParticles = [];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }, 300);
+    }, cfg.dur - 220);
+  }, 220);
+}
+
+function _makeStreakParticle(canvas) {
+  return { x: Math.random()*canvas.width, y:-8-Math.random()*50, w:5+Math.random()*6, h:3+Math.random()*4,
+    r:Math.random()*Math.PI*2, dr:(Math.random()-0.5)*0.16, vx:(Math.random()-0.5)*2.8, vy:1.2+Math.random()*2,
+    color:['rgb(220,30,50)','rgb(200,100,0)','rgb(150,140,0)','#999','#444'][Math.floor(Math.random()*5)],
+    alpha:1, decay:0.006+Math.random()*0.005 };
+}
+
+function _stepStreakConfetti(ctx, canvas) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  _streakParticles = _streakParticles.filter(p => p.alpha > 0.01);
+  for (const p of _streakParticles) {
+    p.x+=p.vx; p.y+=p.vy; p.r+=p.dr; p.vy+=0.045; p.alpha-=p.decay;
+    ctx.save(); ctx.globalAlpha=Math.max(0,p.alpha); ctx.translate(p.x,p.y); ctx.rotate(p.r);
+    ctx.fillStyle=p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
+  }
+  if (_streakParticles.length > 0) _streakRaf = requestAnimationFrame(() => _stepStreakConfetti(ctx, canvas));
+  else { ctx.clearRect(0,0,canvas.width,canvas.height); _streakRaf = null; }
+}
+
+function _animProp(el, duration, onTick, onDone) {
+  const start = performance.now();
+  (function frame(now) {
+    const t = Math.min((now - start) / duration, 1);
+    onTick(t);
+    if (t < 1) requestAnimationFrame(frame);
+    else if (onDone) onDone();
+  })(performance.now());
+}
+
+function _streakBurstEmojis(emoji, count) {
+  const sw=window.innerWidth, sh=window.innerHeight, cx=sw/2, cy=sh/2;
+  const isTrophy=(emoji==='\uD83C\uDFC6'), isSingle=(count===1);
+  for (let i=0; i<count; i++) {
+    const angle=Math.random()*Math.PI*2, dist=80+Math.random()*130;
+    const dx=Math.cos(angle)*dist, dy=Math.sin(angle)*dist;
+    const spin=(Math.random()-0.5)*80, size=isSingle?64:isTrophy?36+Math.random()*16:24+Math.random()*22;
+    const startX=Math.random()*sw, swingX=(Math.random()-0.5)*60;
+    const delay=isSingle?0:i*(isTrophy?110:50+Math.random()*60);
+    const dur=isTrophy?2400+Math.random()*1200:isSingle?1600:900+Math.random()*400;
+    setTimeout(() => {
+      const el=document.createElement('span');
+      el.textContent=emoji;
+      el.style.cssText='position:fixed;font-size:'+size+'px;line-height:1;pointer-events:none;user-select:none;z-index:502;opacity:0;';
+      if (isTrophy) {
+        el.style.left=startX+'px'; el.style.top='0px'; document.body.appendChild(el);
+        _animProp(el, dur, t => {
+          el.style.transform='translate('+(swingX*Math.sin(t*Math.PI))+'px,'+(t*(sh+80))+'px) rotate('+(spin*t)+'deg)';
+          el.style.opacity=t<0.8?1:(1-t)/0.2;
+        }, () => el.remove());
+      } else if (isSingle) {
+        el.style.left=cx+'px'; el.style.top=cy+'px'; document.body.appendChild(el);
+        _animProp(el, dur, t => {
+          const scale=t<0.25?(t/0.25)*1.3:t<0.4?1.3-(t-0.25)/0.15*0.3:1;
+          el.style.transform='translate(-50%, calc(-50% + '+(( 1-Math.pow(1-t,3))*-170)+'px)) scale('+scale+')';
+          el.style.opacity=t<0.5?1:1-(t-0.5)/0.5;
+        }, () => el.remove());
+      } else {
+        el.style.left=cx+'px'; el.style.top=cy+'px'; document.body.appendChild(el);
+        _animProp(el, dur, t => {
+          const e=1-Math.pow(1-t,2.5), s=t<0.2?(t/0.2)*1.2:t<0.35?1.2-(t-0.2)/0.15*0.2:1;
+          el.style.transform='translate(calc(-50% + '+(dx*e)+'px), calc(-50% + '+(dy*e)+'px)) scale('+s+') rotate('+(spin*t)+'deg)';
+          el.style.opacity=t<0.5?1:1-(t-0.5)/0.5;
+        }, () => el.remove());
+      }
+    }, delay);
+  }
 }
 
 function toggleMute() {
@@ -2636,5 +2838,19 @@ window.addEventListener('resize', () => {
 <footer class="site-footer">
   © 2026 ObjectivelyDrew · NET rankings data sourced Feb 26, 2026 via NCAA.com
 </footer>
+<!-- Streak overlay -->
+<div id="streak-overlay">
+  <div id="streak-interstitial"></div>
+  <canvas id="streak-confetti-canvas"></canvas>
+  <div id="streak-emoji-layer"></div>
+  <div id="streak-content">
+    <div class="streak-scoreboard">
+      <div class="streak-digit"><span id="streak-tens">0</span></div>
+      <div class="streak-digit"><span id="streak-ones">0</span></div>
+    </div>
+    <div id="streak-label">HEATING UP</div>
+  </div>
+</div>
+
 </body>
 </html>
