@@ -2460,6 +2460,8 @@ function beginGame() {
   document.getElementById('intro').classList.remove('show');
   // Kick off logo preload immediately in background
   setTimeout(preloadAllLogos, 0);
+  // Pre-warm streak animation engine — runs one invisible frame to trigger JIT compilation
+  setTimeout(_preWarmStreakEngine, 500);
   // Render the pre-loaded match
   updateProgressUI();
   ['A','B'].forEach((s, i) => {
@@ -2634,6 +2636,26 @@ const STREAK_LEVELS = {
 
 let _streakParticles = [], _streakRaf = null;
 
+// Pre-warm: run one silent off-screen frame to JIT-compile all animation paths
+function _preWarmStreakEngine() {
+  const canvas = document.getElementById('streak-confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  // Temporarily size to 1x1 so no visible output
+  const origW = canvas.width, origH = canvas.height;
+  canvas.width = 1; canvas.height = 1;
+  // Run one particle through the loop
+  const dummy = [_makeStreakParticle(canvas)];
+  dummy[0].x = 0; dummy[0].y = 0;
+  ctx.save(); ctx.globalAlpha = 0.001;
+  ctx.fillStyle = dummy[0].color;
+  ctx.fillRect(0, 0, 1, 1);
+  ctx.restore();
+  // Run _animProp once with a no-op
+  _animProp({ style: { transform:'', opacity:'' } }, 1, () => {}, null);
+  // Restore canvas
+  canvas.width = origW; canvas.height = origH;
+}
+
 function triggerStreakOverlay(score) {
   const cfg = STREAK_LEVELS[score];
   if (!cfg) return;
@@ -2674,13 +2696,15 @@ function triggerStreakOverlay(score) {
 
     _streakBurstEmojis(cfg.emoji, cfg.fires, arena);
 
-    const bursts = score === 20 ? 4 : score === 15 ? 3 : score === 10 ? 2 : 1;
-    for (let b = 0; b < bursts; b++) {
+    // Fire all confetti immediately at animation start
+    for (let i = 0; i < cfg.confetti; i++) _streakParticles.push(_makeStreakParticle(canvas));
+    _streakRaf = requestAnimationFrame(() => _stepStreakConfetti(ctx, canvas));
+    // For higher levels, add a second wave mid-way
+    if (score >= 10) {
       setTimeout(() => {
-        const n = Math.ceil(cfg.confetti / bursts);
-        for (let i = 0; i < n; i++) _streakParticles.push(_makeStreakParticle(canvas));
-        if (!_streakRaf) _streakRaf = requestAnimationFrame(() => _stepStreakConfetti(ctx, canvas));
-      }, b * 340);
+        const extra = Math.floor(cfg.confetti * 0.5);
+        for (let i = 0; i < extra; i++) _streakParticles.push(_makeStreakParticle(canvas));
+      }, cfg.dur * 0.35);
     }
 
     setTimeout(() => {
@@ -2697,22 +2721,34 @@ function triggerStreakOverlay(score) {
 }
 
 function _makeStreakParticle(canvas) {
-  return { x: Math.random()*canvas.width, y:-8-Math.random()*50, w:5+Math.random()*6, h:3+Math.random()*4,
-    r:Math.random()*Math.PI*2, dr:(Math.random()-0.5)*0.16, vx:(Math.random()-0.5)*2.8, vy:1.2+Math.random()*2,
-    color:['rgb(220,30,50)','rgb(200,100,0)','rgb(150,140,0)','#999','#444'][Math.floor(Math.random()*5)],
-    alpha:1, decay:0.006+Math.random()*0.005 };
+  return {
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height * 0.3, // start across top 30% not above canvas
+    w: 5 + Math.random() * 6, h: 3 + Math.random() * 4,
+    r: Math.random() * Math.PI * 2, dr: (Math.random() - 0.5) * 0.16,
+    vx: (Math.random() - 0.5) * 2.8, vy: -2 - Math.random() * 2, // launch upward first
+    color: ['rgb(220,30,50)','rgb(200,100,0)','rgb(150,140,0)','#999','#444'][Math.floor(Math.random()*5)],
+    alpha: 1, decay: 0.004 + Math.random() * 0.004,
+  };
+}
 }
 
 function _stepStreakConfetti(ctx, canvas) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  _streakParticles = _streakParticles.filter(p => p.alpha > 0.01);
+  _streakParticles = _streakParticles.filter(p => p.alpha > 0.01 && p.y < canvas.height + 20);
   for (const p of _streakParticles) {
-    p.x+=p.vx; p.y+=p.vy; p.r+=p.dr; p.vy+=0.045; p.alpha-=p.decay;
-    ctx.save(); ctx.globalAlpha=Math.max(0,p.alpha); ctx.translate(p.x,p.y); ctx.rotate(p.r);
-    ctx.fillStyle=p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
+    p.x += p.vx; p.y += p.vy; p.r += p.dr;
+    p.vy += 0.12; // gravity — particles arc up then fall
+    p.alpha -= p.decay;
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, p.alpha);
+    ctx.translate(p.x, p.y); ctx.rotate(p.r);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+    ctx.restore();
   }
   if (_streakParticles.length > 0) _streakRaf = requestAnimationFrame(() => _stepStreakConfetti(ctx, canvas));
-  else { ctx.clearRect(0,0,canvas.width,canvas.height); _streakRaf = null; }
+  else { ctx.clearRect(0, 0, canvas.width, canvas.height); _streakRaf = null; }
 }
 
 function _animProp(el, duration, onTick, onDone) {
