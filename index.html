@@ -2642,24 +2642,10 @@ const STREAK_LEVELS = {
 
 let _streakParticles = [], _streakRaf = null;
 
-// Pre-warm: run one silent off-screen frame to JIT-compile all animation paths
+// Pre-warm: no-op — prewarm was previously corrupting canvas dimensions
 function _preWarmStreakEngine() {
-  const canvas = document.getElementById('streak-confetti-canvas');
-  const ctx = canvas.getContext('2d');
-  // Temporarily size to 1x1 so no visible output
-  const origW = canvas.width, origH = canvas.height;
-  canvas.width = 1; canvas.height = 1;
-  // Run one particle through the loop
-  const dummy = [_makeStreakParticle(canvas)];
-  dummy[0].x = 0; dummy[0].y = 0;
-  ctx.save(); ctx.globalAlpha = 0.001;
-  ctx.fillStyle = dummy[0].color;
-  ctx.fillRect(0, 0, 1, 1);
-  ctx.restore();
-  // Run _animProp once with a no-op
-  _animProp({ style: { transform:'', opacity:'' } }, 1, () => {}, null);
-  // Restore canvas
-  canvas.width = origW; canvas.height = origH;
+  // Intentionally empty: the old implementation restored canvas to 0x0
+  // which caused all particles to spawn at origin. Removed.
 }
 
 function triggerStreakOverlay(score) {
@@ -2708,13 +2694,13 @@ function triggerStreakOverlay(score) {
     _streakBurstEmojis(cfg.emoji, cfg.fires, arena);
 
     // Fire all confetti immediately at animation start
-    for (let i = 0; i < cfg.confetti; i++) _streakParticles.push(_makeStreakParticle(canvas));
+    for (let i = 0; i < cfg.confetti; i++) _streakParticles.push(_makeStreakParticle(canvas.width, canvas.height));
     _streakRaf = requestAnimationFrame(() => _stepStreakConfetti(ctx, canvas));
     // For higher levels, add a second wave mid-way
     if (score >= 10) {
       setTimeout(() => {
         const extra = Math.floor(cfg.confetti * 0.5);
-        for (let i = 0; i < extra; i++) _streakParticles.push(_makeStreakParticle(canvas));
+        for (let i = 0; i < extra; i++) _streakParticles.push(_makeStreakParticle(canvas.width, canvas.height));
       }, cfg.dur * 0.35);
     }
 
@@ -2731,34 +2717,60 @@ function triggerStreakOverlay(score) {
   }, 220);
 }
 
-function _makeStreakParticle(canvas) {
+function _makeStreakParticle(W, H) {
+  // Particles spawn staggered across full canvas height (negative y = above canvas)
+  // so they fall through the entire visible area, not just the top
   return {
-    x: Math.random() * canvas.width,
-    y: -Math.random() * canvas.height, // stagger start above canvas so particles fill full height as they fall
-    w: 5 + Math.random() * 6, h: 3 + Math.random() * 4,
-    r: Math.random() * Math.PI * 2, dr: (Math.random() - 0.5) * 0.16,
-    vx: (Math.random() - 0.5) * 2.8, vy: 2 + Math.random() * 4, // fall downward from the start
-    color: ['rgb(220,30,50)','rgb(200,100,0)','rgb(150,140,0)','#999','#444'][Math.floor(Math.random()*5)],
-    alpha: 1, decay: 0.003 + Math.random() * 0.003,
+    x:  Math.random() * W,
+    y: -Math.random() * H,
+    w:  5 + Math.random() * 6,
+    h:  3 + Math.random() * 4,
+    r:  Math.random() * Math.PI * 2,
+    dr: (Math.random() - 0.5) * 0.14,
+    vx: (Math.random() - 0.5) * 3,
+    vy: 1.5 + Math.random() * 3,   // downward only, no upward launch
+    color: ['#dc1e32','#e67800','#d2bc00','#aaaaaa','#444444'][Math.floor(Math.random() * 5)],
+    alpha: 1,
+    decay: 0.006 + Math.random() * 0.004,  // fades in ~2-3s at 60fps
   };
 }
 
 function _stepStreakConfetti(ctx, canvas) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  _streakParticles = _streakParticles.filter(p => p.alpha > 0.01 && p.y < canvas.height + 20);
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  _streakParticles = _streakParticles.filter(p => p.alpha > 0.01 && p.y < H + 20);
+
+  // Batch by color to minimize fillStyle switches — big perf win
+  const byColor = {};
   for (const p of _streakParticles) {
     p.x += p.vx; p.y += p.vy; p.r += p.dr;
-    p.vy += 0.08; // gentle gravity acceleration
+    p.vy += 0.09;  // gravity
     p.alpha -= p.decay;
-    ctx.save();
-    ctx.globalAlpha = Math.max(0, p.alpha);
-    ctx.translate(p.x, p.y); ctx.rotate(p.r);
-    ctx.fillStyle = p.color;
-    ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
-    ctx.restore();
+    if (p.alpha <= 0) continue;
+    if (!byColor[p.color]) byColor[p.color] = [];
+    byColor[p.color].push(p);
   }
-  if (_streakParticles.length > 0) _streakRaf = requestAnimationFrame(() => _stepStreakConfetti(ctx, canvas));
-  else { ctx.clearRect(0, 0, canvas.width, canvas.height); _streakRaf = null; }
+
+  // Draw all particles of each color in one pass, no save/restore per particle
+  for (const [color, particles] of Object.entries(byColor)) {
+    ctx.fillStyle = color;
+    for (const p of particles) {
+      ctx.globalAlpha = Math.max(0, p.alpha);
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.r);
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  if (_streakParticles.length > 0) {
+    _streakRaf = requestAnimationFrame(() => _stepStreakConfetti(ctx, canvas));
+  } else {
+    ctx.clearRect(0, 0, W, H);
+    _streakRaf = null;
+  }
 }
 
 function _animProp(el, duration, onTick, onDone) {
