@@ -1184,46 +1184,18 @@ canvas {
     <div class="progress-label"><span id="q-num">1</span> of 20</div>
   </div>
   <div class="score">Correct: <strong id="sc-r">0</strong> / <strong>20</strong></div>
-    <button id="mute-btn" onclick="toggleMute()" title="Mute sounds" style="background:none;border:none;cursor:pointer;font-size:18px;padding:0 4px;line-height:1;opacity:0.7;" aria-label="Toggle sound">🔊</button>
 </div>
 
 <div id="legend-wrap"><button class="leg-arrow leg-arrow-l" id="legArrowL" aria-hidden="true">&#8249;</button><div id="legend"><div class="leg-scroll-hint"></div>
 
-  <!-- Section 1: Quadrant colors -->
+  <!-- Section 1: Accessibility (first) -->
   <div class="leg-section">
-    <div class="leg-section-title">Quadrant</div>
-    <div class="leg-quads">
-      <div class="leg-q"><div class="leg-swatch" style="background:rgb(220,30,50)"></div>Q1</div>
-      <div class="leg-q"><div class="leg-swatch" style="background:rgb(230,120,0)"></div>Q2</div>
-      <div class="leg-q"><div class="leg-swatch" style="background:rgb(210,185,0)"></div>Q3</div>
-      <div class="leg-q"><div class="leg-swatch" style="background:rgb(190,190,190)"></div>Q4</div>
-    </div>
+    <div class="leg-section-title">Accessibility</div>
+    <button class="hc-btn" id="hc-btn" onclick="toggleHC()">High-Contrast Mode</button>
+    <button id="mute-btn" onclick="toggleMute()" title="Mute sounds" class="hc-btn" style="margin-top:6px;" aria-label="Toggle sound">🔊 Sound On</button>
   </div>
 
-  <!-- Section 2: Location thresholds table -->
-  <div class="leg-section">
-    <div class="leg-section-title">NET Rank Thresholds</div>
-    <div class="leg-table">
-      <span class="leg-table-hd"></span>
-      <span class="leg-table-hd">HOME</span>
-      <span class="leg-table-hd">NEUTRAL</span>
-      <span class="leg-table-hd">AWAY</span>
-
-      <span class="leg-table-q" style="color:rgb(240,80,90)">Q1</span>
-      <span>1–30</span><span>1–50</span><span>1–75</span>
-
-      <span class="leg-table-q" style="color:rgb(240,150,60)">Q2</span>
-      <span>31–75</span><span>51–100</span><span>76–135</span>
-
-      <span class="leg-table-q" style="color:rgb(220,200,60)">Q3</span>
-      <span>76–160</span><span>101–200</span><span>136–240</span>
-
-      <span class="leg-table-q" style="color:rgb(190,190,190)">Q4</span>
-      <span>161+</span><span>201+</span><span>241+</span>
-    </div>
-  </div>
-
-  <!-- Section 3: Ring size + margin encoding -->
+  <!-- Section 2: How to Read This -->
   <div class="leg-section">
     <div class="leg-section-title">How to Read This</div>
     <div class="leg-explains">
@@ -1257,10 +1229,15 @@ canvas {
     </div>
   </div>
 
-  <!-- Section 4: High-contrast toggle -->
+  <!-- Section 3: Quadrant colors (last) -->
   <div class="leg-section">
-    <div class="leg-section-title">Accessibility</div>
-    <button class="hc-btn" id="hc-btn" onclick="toggleHC()">High-Contrast Mode</button>
+    <div class="leg-section-title">Quadrant</div>
+    <div class="leg-quads">
+      <div class="leg-q"><div class="leg-swatch" style="background:rgb(220,30,50)"></div>Q1</div>
+      <div class="leg-q"><div class="leg-swatch" style="background:rgb(230,120,0)"></div>Q2</div>
+      <div class="leg-q"><div class="leg-swatch" style="background:rgb(210,185,0)"></div>Q3</div>
+      <div class="leg-q"><div class="leg-swatch" style="background:rgb(190,190,190)"></div>Q4</div>
+    </div>
   </div>
 
 </div><button class="leg-arrow leg-arrow-r" id="legArrowR" aria-hidden="true">&#8250;</button></div><!-- /legend-wrap -->
@@ -2822,8 +2799,9 @@ function triggerStreakOverlay(score) {
 
 function toggleMute() {
   _muted = !_muted;
-  document.getElementById('mute-btn').textContent = _muted ? '🔇' : '🔊';
-  document.getElementById('mute-btn').title = _muted ? 'Unmute sounds' : 'Mute sounds';
+  const btn = document.getElementById('mute-btn');
+  btn.textContent = _muted ? '🔇 Sound Off' : '🔊 Sound On';
+  btn.title = _muted ? 'Unmute sounds' : 'Mute sounds';
 }
 
 // Redraw canvases on window resize (mobile orientation change etc.)
