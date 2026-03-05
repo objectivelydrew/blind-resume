@@ -505,10 +505,11 @@ canvas {
   inset: 0;
   background: var(--bg);
   z-index: 300;
-  align-items: center;
-  justify-content: center;
+  /* Scrollable on short viewports, centered on tall ones */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
-#intro.show { display: flex; }
+#intro.show { display: block; }
 .intro-card {
   display: flex;
   flex-direction: column;
@@ -517,6 +518,12 @@ canvas {
   max-width: 520px;
   width: 92%;
   text-align: left;
+  /* Center vertically when there's room, otherwise just flow from top */
+  min-height: calc(100vh - 80px); /* 80px for footer */
+  justify-content: center;
+  margin: 0 auto;
+  padding: 32px 0 24px;
+  box-sizing: border-box;
 }
 .intro-header {
   display: flex;
